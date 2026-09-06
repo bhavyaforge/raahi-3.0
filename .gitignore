@@ -1,0 +1,8 @@
+# The record this machine has collected: a SQLite file and the photographs.
+# Local to whoever ran the app; not part of the source.
+data/
+demo_photos/
+
+__pycache__/
+*.pyc
+.DS_Store

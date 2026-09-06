@@ -1,0 +1,12 @@
+{
+  "_comment": "What a detector said about the same four images. Scores are required; boxes are [x1,y1,x2,y2].",
+  "detections": [
+    {"image_id": "India_000001", "class": "D00", "bbox": [124, 344, 170, 686], "score": 0.93},
+    {"image_id": "India_000001", "class": "D10", "bbox": [430, 496, 772, 556], "score": 0.81},
+    {"image_id": "India_000002", "class": "D00", "bbox": [500, 100, 560, 300], "score": 0.62},
+    {"image_id": "India_000002", "class": "D00", "bbox": [204, 268, 248, 610], "score": 0.48},
+    {"image_id": "India_000003", "class": "D20", "bbox": [300, 392, 615, 705], "score": 0.88},
+    {"image_id": "India_000003", "class": "D40", "bbox": [690, 515, 835, 648], "score": 0.71},
+    {"image_id": "India_000004", "class": "D40", "bbox": [255, 305, 398, 436], "score": 0.66}
+  ]
+}

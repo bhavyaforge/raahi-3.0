@@ -1,0 +1,11 @@
+{
+  "_comment": "Six labelled boxes over four images. Replace with your own RDD2022 split; a VOC XML directory works too.",
+  "annotations": [
+    {"image_id": "India_000001", "class": "D00", "bbox": [120, 340, 168, 690]},
+    {"image_id": "India_000001", "class": "D10", "bbox": [420, 500, 780, 552]},
+    {"image_id": "India_000002", "class": "D00", "bbox": [200, 260, 244, 620]},
+    {"image_id": "India_000003", "class": "D20", "bbox": [310, 400, 620, 700]},
+    {"image_id": "India_000003", "class": "D40", "bbox": [700, 520, 830, 640]},
+    {"image_id": "India_000004", "class": "D40", "bbox": [260, 300, 400, 430]}
+  ]
+}

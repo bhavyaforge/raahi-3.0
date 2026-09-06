@@ -1,0 +1,66 @@
+RAAHI 3.0 — how to run it
+=========================
+
+There are two copies of the same app in this folder. Use whichever you like.
+
+
+THE EASY ONE — a single file
+----------------------------
+
+    python3 raahi.py
+
+That is the whole thing. Everything is inside that one file: the server,
+the web pages, the crack detection, the lot. It does not matter which
+folder your Terminal is in — you can even type "python3 " and then drag
+the file into the Terminal window instead of typing the path.
+
+Your browser opens at http://localhost:8000
+Stop it with Control + C.
+
+Readings are saved in a folder called "data", created next to raahi.py.
+Delete that folder to start clean.
+
+
+THE NORMAL ONE — the source folder
+----------------------------------
+
+    cd ~/Desktop/raahi3.0
+    python3 server.py
+
+Same app, but split into files your team can read and edit:
+
+    web/index.html, web/styles.css, web/app.js, web/hero.js
+    raahi_backend/*.py
+    tools/*.py
+
+web/hero.js is the road on the front page — sky, sun, asphalt, the
+reflection down the tarmac and the crack, all drawn in code. There is no
+image file to swap; change the numbers at the top of that file.
+
+
+TRY IT WITHOUT GOING OUTSIDE
+----------------------------
+
+    python3 raahi.py demo
+
+Writes five photographs of a crack that grows a little each day, each one
+carrying real GPS in its metadata. Upload them in order on the CAPTURE
+tab. Photo 1 says "New spot recorded". Photo 2 onward says "Same spot as
+before" and explains why — the metres from the recorded position, the
+camera heading, the scene match.
+
+Then look at GROWTH and SEAL LIST. The lead time comes out around 12 days.
+
+
+IF SOMETHING LOOKS WRONG
+------------------------
+
+Front page showing big percentages, or a headline across the road image?
+You are looking at an older copy. The front page should be a wordless
+sunrise over a road, with the writing below it.
+
+Camera button does nothing? The camera needs the server — it will not
+work if you double-click index.html. Uploading a photo always works, and
+an uploaded phone photo carries GPS, which a webcam frame does not.
+
+Nothing to install. Python 3 only. Nothing leaves your machine.

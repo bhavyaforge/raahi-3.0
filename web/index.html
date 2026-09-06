@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RAAHI · crack growth prototype</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Ctext y=%2726%27 font-size=%2726%27%3E%F0%9F%9B%A3%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="vig"></div><div class="grain"></div>
+
+<div class="wrap">
+<header>
+  <div>
+    <div class="mark">RAAHI</div>
+    <div class="sub">Crack growth prototype &nbsp;·&nbsp; Team Innovators &nbsp;·&nbsp; SIH26198</div>
+  </div>
+  <div class="badge" id="cal"><span class="dot"></span>STARTING</div>
+</header>
+
+<nav id="nav" role="navigation" aria-label="Main navigation">
+  <button class="tab on" data-p="p0" aria-current="page"><span class="n">00</span>OVERVIEW</button>
+  <button class="tab" data-p="p1"><span class="n">01</span>CAPTURE</button>
+  <button class="tab" data-p="p2"><span class="n">02</span>SPOTS</button>
+  <button class="tab" data-p="p3"><span class="n">03</span>GROWTH</button>
+  <button class="tab" data-p="p4"><span class="n">04</span>SEAL LIST</button>
+  <button class="tab" data-p="p5"><span class="n">05</span>DETECTION QUALITY</button>
+  <button class="tab train-only" data-p="p6"><span class="n">06</span>TRAINING</button>
+  <div id="ink"></div>
+</nav>
+
+<!-- ================= 00 OVERVIEW ================= -->
+<section class="page on" id="p0" aria-labelledby="overview-title">
+
+  <div class="roadhero">
+    <canvas id="road" aria-hidden="true"></canvas>
+    <div class="shade" aria-hidden="true"></div>
+  </div>
+
+  <div class="introrow">
+    <div>
+      <h2 id="overview-title">What this prototype <em>does</em></h2>
+      <p class="lede">Photograph a crack. The app measures it, records where the photo was
+         taken, and recognises that spot again the next time somebody stands there. Once the
+         same crack has been photographed twice, it has a growth rate — and a date by which
+         it needs sealing.</p>
+    </div>
+    <button class="cta" id="startround">START A ROUND <span>&#8599;</span></button>
+  </div>
+
+  <div class="grid g2e">
+    <div class="card">
+      <h3>WORKING IN THIS BUILD</h3>
+      <ul class="ticks">
+        <li>Finds the crack in a photograph without being told where it is</li>
+        <li>Follows every bend and reports length in millimetres</li>
+        <li>Reads GPS out of the photo's own EXIF, or off the device when capturing live</li>
+        <li>Decides whether today's photo is yesterday's crack — position, camera heading
+            and a fingerprint of the scene itself</li>
+        <li>Fits a growth rate across passes and dates the threshold crossing</li>
+        <li>Reports <b>lead time</b>: days between first sighting and predicted failure</li>
+        <li>Scores a damage detector per class, on a named split, sample size stated</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>NOT IN THIS BUILD, AND WE SAY SO</h3>
+      <ul class="crosses">
+        <li>No trained damage classifier. Detection is classical image processing,
+            not a model — the class labels on the seal list come from whoever typed them</li>
+        <li>No detection score to quote yet. The DETECTION QUALITY tab stays empty
+            until a real model is evaluated against real labels</li>
+        <li>Runs on a laptop or a phone browser, not on a truck</li>
+        <li>Daylight, close range, camera roughly overhead. Not heavy rain</li>
+        <li>Absolute length carries a small constant bias. Growth is a subtraction,
+            so the bias cancels — that is why growth is the number we report</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:18px">
+    <h3>HOW THE PIECES FIT</h3>
+    <div class="tscroll">
+    <table class="plain">
+      <thead><tr><th>FILE</th><th>WHAT IT DOES</th><th>THE PART THAT MATTERS</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">raahi_backend/exif.py</td><td>Reads EXIF from JPEG and HEIC</td>
+            <td>GPS position, heading, focal length</td></tr>
+        <tr><td class="mono">raahi_backend/geo.py</td><td>Decides if two photos are the same spot</td>
+            <td>Distance + heading + 64-bit scene hash</td></tr>
+        <tr><td class="mono">raahi_backend/growth.py</td><td>Turns readings into a rate and a date</td>
+            <td>Least-squares fit, lead time in days</td></tr>
+        <tr><td class="mono">raahi_backend/metrics.py</td><td>Scores a detector</td>
+            <td>AP per class, COCO IoU sweep</td></tr>
+        <tr><td class="mono">raahi_backend/store.py</td><td>Keeps the record</td>
+            <td>SQLite + the original photos</td></tr>
+        <tr><td class="mono">web/app.js</td><td>Finds and measures the crack in the browser</td>
+            <td>Threshold, morphology, connected components</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="tiny" style="margin-top:14px">
+      Everything is stored in <span class="mono">data/</span> — one SQLite file and the photos,
+      byte for byte as the camera wrote them. Delete the folder to start clean.
+      Nothing leaves the machine.
+    </p>
+  </div>
+
+  <div class="card" style="margin-top:18px">
+    <h3>WHERE IT STANDS</h3>
+    <div class="statgrid" id="ovstats"></div>
+  </div>
+</section>
+
+<!-- ================= 01 CAPTURE ================= -->
+<section class="page" id="p1" aria-labelledby="capture-title">
+  <h2 id="capture-title">Photograph a <em>crack</em></h2>
+  <p class="lede">Upload a photo or take one now. Nothing to set up first.</p>
+
+  <div class="grid g2">
+    <div class="card">
+      <div class="seg" id="src" role="group" aria-label="Photo source">
+        <button class="on" data-m="file" aria-pressed="true">Upload photo</button>
+        <button data-m="cam" aria-pressed="false">Capture photo</button>
+      </div>
+
+      <div id="pickwrap" style="margin-top:16px">
+        <button class="btn g" id="pick">CHOOSE A PHOTO</button>
+        <p class="tiny" style="margin-top:10px">
+          A photo straight off a phone carries its own GPS. That is what lets the app
+          find this spot again tomorrow.
+        </p>
+      </div>
+      <div id="camwrap" style="margin-top:16px"></div>
+      <input type="file" id="file" accept="image/*" style="display:none" aria-label="Choose a photo">
+
+      <label class="f" for="rname">LABEL (OPTIONAL)</label>
+      <input type="text" id="rname" placeholder="Morning round" aria-label="Reading label">
+
+      <div id="siteforce"></div>
+
+      <button class="btn" id="saveread" disabled>SAVE THIS READING</button>
+      <div id="msg" role="status" aria-live="polite"></div>
+
+      <details class="adv">
+        <summary>Adjust the detection</summary>
+        <label class="f" for="t2">DARKNESS THRESHOLD <span id="t2v">auto</span></label>
+        <input type="range" id="t2" min="40" max="210" value="110"
+               aria-valuenow="110" aria-valuemin="40" aria-valuemax="210">
+        <label class="f" for="dist">PHOTO TAKEN FROM ABOUT (cm)</label>
+        <input type="number" id="dist" value="120" step="5" min="5"
+               aria-label="Camera distance in centimetres">
+        <p class="tiny" style="margin-top:8px">
+          Used only when no calibration exists: with the lens focal length from EXIF,
+          the distance alone gives millimetres per pixel.
+        </p>
+        <div id="cyclewrap"></div>
+      </details>
+    </div>
+
+    <div>
+      <div class="card">
+        <h3>DETECTION</h3>
+        <div class="stage" id="stage" role="img" aria-label="Detected crack">
+          <div class="ph">The detected crack appears here, outlined.</div>
+        </div>
+        <div class="readout" id="ro" style="display:none">
+          <div class="l">MEASURED CRACK LENGTH</div>
+          <div class="v"><span id="mmv">0</span><span class="u" id="mmu">mm</span></div>
+          <div class="tiny" id="scalenote" style="margin-top:8px"></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:18px">
+        <h3>WHERE THIS PHOTO WAS TAKEN</h3>
+        <div id="gpsbox"><div class="ph">Position is read from the photo when you save it.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 02 SPOTS ================= -->
+<section class="page" id="p2" aria-labelledby="spots-title">
+  <h2 id="spots-title">Spots on the <em>round</em></h2>
+  <p class="lede">Every place a photo has been taken, with the position the app will match
+     against tomorrow. Photograph the same crack again and it lands in the same row.</p>
+  <div id="sitelist"></div>
+</section>
+
+<!-- ================= 03 GROWTH ================= -->
+<section class="page" id="p3" aria-labelledby="growth-title">
+  <h2 id="growth-title">Is it <em>growing?</em></h2>
+  <p class="lede">The baseline is the first photograph of a spot. Every later pass is measured
+     against it, and the difference is the only number that survives a biased ruler.</p>
+
+  <div class="card" style="margin-bottom:18px">
+    <div class="pickrow">
+      <div style="flex:1">
+        <label class="f" for="sitepick" style="margin-top:0">SPOT</label>
+        <select id="sitepick" aria-label="Choose a spot"></select>
+      </div>
+      <div style="flex:1">
+        <label class="f" for="th" style="margin-top:0">SEAL THRESHOLD
+          <span id="thv" style="color:var(--red)">150</span> mm</label>
+        <input type="range" id="th" min="20" max="600" value="150"
+               aria-valuenow="150" aria-valuemin="20" aria-valuemax="600">
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:18px">
+    <h3>BASELINE AGAINST LATEST</h3>
+    <div id="baseline"></div>
+  </div>
+
+  <div class="grid g2">
+    <div class="card">
+      <h3>CRACK LENGTH ACROSS PASSES</h3>
+      <div class="chartbox"><canvas id="chart" aria-label="Crack growth chart"></canvas></div>
+    </div>
+    <div>
+      <div class="card">
+        <h3>VERDICT</h3>
+        <div id="verdict"><div class="ph">Choose a spot.</div></div>
+        <div class="ticker" id="stats"></div>
+      </div>
+      <div class="card" style="margin-top:18px">
+        <h3>EVERY PASS</h3>
+        <div id="passstrip"></div>
+        <div style="max-height:240px;overflow:auto;margin-top:12px"><table id="rtab"></table></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 04 SEAL LIST ================= -->
+<section class="page" id="p4" aria-labelledby="schedule-title">
+  <h2 id="schedule-title">The <em>seal list</em></h2>
+  <p class="lede">Built only from readings actually taken on this machine. A spot with one
+     photograph has no rate, so it gets no date — it sits at the bottom until it is
+     photographed again.</p>
+  <div class="card" style="margin-bottom:18px">
+    <h3>LEAD TIME — THE FIGURE NOBODY PUBLISHES</h3>
+    <div id="leadbox"></div>
+    <p class="tiny" style="margin-top:12px">
+      Lead time is the gap between the day a crack was first seen and the day it is predicted
+      to cross the sealing threshold. It only exists if somebody photographs the same square
+      metre of road more than once, which is why no Indian road authority reports it today.
+    </p>
+  </div>
+  <div class="card">
+    <h3>RANKED BY TIME REMAINING</h3>
+    <div id="sched"></div>
+  </div>
+</section>
+
+<!-- ================= 05 DETECTION QUALITY ================= -->
+<section class="page" id="p5" aria-labelledby="quality-title">
+  <h2 id="quality-title">Detection <em>quality</em></h2>
+  <p class="lede">Average precision per damage class, on a named test split, with the sample
+     size printed beside it. Until a model is scored against real labels, this page stays
+     empty on purpose.</p>
+  <div id="quality"></div>
+</section>
+
+<!-- ================= 06 TRAINING (hidden from the round) ============= -->
+<section class="page" id="p6" aria-labelledby="training-title">
+  <h2 id="training-title">Training <em>tools</em></h2>
+  <p class="lede">Not part of the round. Calibration, accuracy trials and detector scoring
+     live here so that the person photographing a road never has to think about any of it.</p>
+
+  <div class="grid g2">
+    <div class="card">
+      <h3>CALIBRATION — TEACH IT HOW BIG A PIXEL IS</h3>
+      <p class="mut">Photograph a <b>straight</b> line whose length you have measured with a
+        ruler. Everything measured afterwards inherits this number.</p>
+      <div class="seg" id="src1" role="group" aria-label="Calibration photo source">
+        <button class="on" data-m="file" aria-pressed="true">Upload photo</button>
+        <button data-m="cam" aria-pressed="false">Capture photo</button>
+      </div>
+      <div id="pickwrap1" style="margin-top:16px">
+        <button class="btn ghost" id="pick1">CHOOSE A PHOTO</button>
+      </div>
+      <div id="camwrap1" style="margin-top:16px"></div>
+      <input type="file" id="file1" accept="image/*" style="display:none" aria-label="Calibration photo">
+
+      <label class="f" for="t1">DARKNESS THRESHOLD <span id="t1v" style="color:var(--amber)">110</span></label>
+      <input type="range" id="t1" min="40" max="210" value="110">
+      <label class="f" for="truemm">TRUE LENGTH OF THAT LINE (mm)</label>
+      <input type="number" id="truemm" value="100" step="1" min="1">
+      <button class="btn g" id="docal">CALIBRATE FROM THIS PHOTO</button>
+      <div id="out1"></div>
+      <div class="stage" id="st1" style="margin-top:16px">
+        <div class="ph">The detected reference line appears here.</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <h3>ACCURACY AGAINST A RULER</h3>
+        <p class="mut">Extend a crack by an amount you measured. Measure again. Record both
+          numbers, including the ones that make us look bad.</p>
+        <label class="f" for="drew">I EXTENDED IT BY (mm)</label>
+        <input type="number" id="drew" value="40" step="1">
+        <label class="f" for="said">THE SYSTEM REPORTED GROWTH OF (mm)</label>
+        <input type="number" id="said" value="0" step="0.1">
+        <button class="btn" id="addproof">RECORD TRIAL</button>
+        <div id="perr" role="status" aria-live="polite"></div>
+        <table id="ptab" style="margin-top:18px"></table>
+      </div>
+
+      <div class="card" style="margin-top:18px">
+        <h3>SCORE A DETECTOR</h3>
+        <p class="mut">Point at ground truth and predictions on disk. Pascal VOC XML folders
+          (the RDD2022 format) and JSON both work.</p>
+        <label class="f" for="evsplit">TEST SPLIT NAME</label>
+        <input type="text" id="evsplit" placeholder="RDD2022-India-val">
+        <label class="f" for="evmodel">MODEL</label>
+        <input type="text" id="evmodel" placeholder="YOLOv8s 640px, 60 epochs">
+        <label class="f" for="evgt">GROUND TRUTH (folder or .json)</label>
+        <input type="text" id="evgt" placeholder="tools/sample_eval/ground_truth.json">
+        <label class="f" for="evpred">PREDICTIONS (.json)</label>
+        <input type="text" id="evpred" placeholder="tools/sample_eval/predictions.json">
+        <button class="btn ghost" id="runeval">RUN EVALUATION</button>
+        <div id="evmsg"></div>
+        <p class="tiny" style="margin-top:12px">
+          Same thing from a terminal:<br>
+          <span class="mono">python3 tools/eval_map.py --gt LABELS --pred PREDS
+          --split NAME --post http://localhost:8000</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span id="trainlink" role="button" tabindex="0">training tools</span>
+  <span class="sep">·</span>
+  <span>data stays on this machine</span>
+  <span class="sep">·</span>
+  <span class="mono" id="apihint">GET /api/state</span>
+</footer>
+</div>
+
+<script src="hero.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
