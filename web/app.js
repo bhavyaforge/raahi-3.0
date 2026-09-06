@@ -16,6 +16,9 @@ const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g,
 
 const UI = {
   siteId: null,          // spot currently shown on the GROWTH tab
+  reportId: null,        // spot currently shown on the REPORT tab
+  autoShutter: false,    // did the shutter press itself for the photo on screen
+  roadClasses: [],       // the traffic table, fetched once
   sites: [],
   threshold: 150,
   lastResult: null,      // what the detector found in the photo on screen
@@ -62,8 +65,8 @@ function say(hostId, message, kind) {
    Threshold, clean up, label the connected pieces, then score each one on
    how crack-shaped it is: thin, near the middle of the frame, not running
    off the edge. The highest scoring piece is the crack.                  */
-function analyseImage(imgEl, threshold) {
-  const MAX_WIDTH = 760;
+function analyseImage(imgEl, threshold, maxWidth) {
+  const MAX_WIDTH = maxWidth || 760;
   const sourceWidth = imgEl.naturalWidth || imgEl.videoWidth;
   const sourceHeight = imgEl.naturalHeight || imgEl.videoHeight;
   if (!sourceWidth || !sourceHeight) return { err: "No image data available." };
@@ -252,9 +255,10 @@ function lumaGrid(imgEl, size) {
 }
 
 /* ==================== CAMERA & FILES ==================== */
-let mediaStream = null, cameraHost = null;
+let mediaStream = null, cameraHost = null, cameraWatchStop = null;
 
 function stopCamera() {
+  if (cameraWatchStop) { cameraWatchStop(); cameraWatchStop = null; }
   if (mediaStream) { mediaStream.getTracks().forEach((t) => t.stop()); mediaStream = null; }
   if (cameraHost) {
     const host = $(cameraHost);
@@ -279,27 +283,139 @@ function startCamera(hostId, onFrame) {
   }
 
   host.innerHTML = '<video autoplay playsinline muted style="width:100%;border-radius:10px;' +
-    'border:1px solid var(--edge)"></video><button class="btn g" style="margin-top:12px">' +
-    "TAKE THE PHOTO</button>";
+    'border:1px solid var(--edge)"></video>' +
+    '<label class="shutterrow"><input type="checkbox" id="autoshutter" checked>' +
+    "<span>Fire the shutter when it sees a crack</span></label>" +
+    '<div class="shutterstate" id="shutterstate">Camera starting…</div>' +
+    '<button class="btn g" style="margin-top:12px">TAKE THE PHOTO</button>';
   const video = host.querySelector("video");
   const button = host.querySelector("button");
+  const state = $("shutterstate");
 
   navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1600 } } })
-    .then((stream) => { mediaStream = stream; video.srcObject = stream; })
+    .then((stream) => { mediaStream = stream; video.srcObject = stream; watch(); })
     .catch(() => {
       host.innerHTML = '<div class="note bad">The camera is blocked. Allow it in the browser, ' +
         "or upload a photo instead.</div>";
     });
 
-  button.addEventListener("click", () => {
+  /* Take the frame that is on screen right now, at full resolution. */
+  function fire(auto) {
     if (!video.videoWidth) return;
     const canvas = document.createElement("canvas");
     canvas.width = video.videoWidth; canvas.height = video.videoHeight;
     canvas.getContext("2d").drawImage(video, 0, 0);
     const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
     const img = new Image();
-    img.onload = () => onFrame(img, { b64: dataUrl, filename: "capture.jpg", live: true });
+    img.onload = () => onFrame(img, {
+      b64: dataUrl,
+      filename: (auto ? "autoshutter" : "capture") + "-" + Date.now() + ".jpg",
+      live: true, auto: !!auto,
+    });
     img.src = dataUrl;
+  }
+
+  button.addEventListener("click", () => fire(false));
+
+  /* ---- the shutter that presses itself --------------------------------
+     A driver on a collection round has both hands on the wheel, so nobody
+     is going to press anything. The camera watches its own preview and
+     fires when a crack is in front of it.
+
+     Two rules keep it from firing at every dark patch on the road:
+
+       * the frame has to hold something crack-shaped — the same test the
+         still detector uses: thin, long, not filling the picture, and
+         clearly darker than the tarmac around it;
+       * it has to be there in three frames running. A shadow crossing the
+         lens, a wet patch, a passing wheel: all gone by the next frame.
+
+     Frames are checked small and slow — a little over half the working
+     width, once a second — because this runs on a phone with the screen off
+     and the live pass only has to decide whether the picture is worth
+     keeping. The full-resolution frame is what actually gets measured.
+
+     Not smaller than that, though: a crack is two or three pixels wide in
+     the photograph, and below about 400 px across it thins out until the
+     connected-component step finds nothing at all. A watcher that never
+     fires is worse than no watcher. */
+  const WATCH_WIDTH = 420;
+  let stableFor = 0, armed = true, timer = null;
+
+  function watch() {
+    clearInterval(timer);
+    timer = setInterval(look, 900);
+    if (state) state.textContent = "Watching the road…";
+  }
+
+  function look() {
+    if (!mediaStream || !video.videoWidth) return;
+    const auto = $("autoshutter");
+    if (!auto || !auto.checked) {
+      stableFor = 0;
+      if (state) state.textContent = "Automatic shutter off — press the button yourself.";
+      return;
+    }
+    if (!armed) return;
+
+    // Road lighting is nothing like a fixed number — wet tarmac, low sun,
+    // the shadow of the truck itself. So sweep a few cuts and keep the one
+    // with the most contrast, which is the cheap version of what the still
+    // detector does with the full sweep.
+    let top = null, merit = 0;
+    for (const cut of [95, 120, 145]) {
+      const found = analyseImage(video, cut, WATCH_WIDTH);
+      if (found.err || !found.candidates.length) continue;
+      const candidate = found.candidates[0];
+      if (!candidate.plausible) continue;
+      const value = candidate.contrast *
+                    (candidate.span / Math.hypot(found.width, found.height));
+      if (value > merit) { top = candidate; merit = value; }
+    }
+    const good = top && top.contrast > 0.055;
+
+    if (!good) {
+      stableFor = 0;
+      if (state) state.textContent = "Watching the road — nothing crack-shaped yet.";
+      return;
+    }
+
+    stableFor++;
+    if (stableFor < 3) {
+      if (state) {
+        state.textContent = "Crack in frame — holding for a steady view (" +
+          stableFor + " of 3).";
+      }
+      return;
+    }
+
+    stableFor = 0;
+    armed = false;
+    if (state) state.textContent = "SHUTTER — photograph taken and being measured.";
+    fire(true);
+    // Long enough not to photograph the same metre of road forty times while
+    // the truck sits at a junction.
+    setTimeout(() => {
+      armed = true;
+      if (state && mediaStream) state.textContent = "Watching the road…";
+    }, 6000);
+  }
+
+  cameraWatchStop = () => clearInterval(timer);
+}
+
+function readPhoto(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => resolve({ img, photo: { b64: reader.result, filename: file.name,
+                                                 live: false } });
+      img.onerror = () => reject(new Error(file.name + " did not open as an image."));
+      img.src = reader.result;   // the original bytes, so EXIF survives
+    };
+    reader.onerror = () => reject(new Error("Could not read " + file.name + "."));
+    reader.readAsDataURL(file);
   });
 }
 
@@ -307,15 +423,8 @@ function onFileChosen(input, callback) {
   input.addEventListener("change", () => {
     const file = input.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const img = new Image();
-      img.onload = () => callback(img, { b64: reader.result, filename: file.name, live: false });
-      img.onerror = () => toast("That file did not open as an image.");
-      img.src = reader.result;   // the original bytes, so EXIF survives
-    };
-    reader.onerror = () => toast("Could not read that file.");
-    reader.readAsDataURL(file);
+    readPhoto(file).then(({ img, photo }) => callback(img, photo))
+                   .catch((error) => toast(error.message));
   });
 }
 
@@ -358,6 +467,7 @@ let captureIndex = 0, captureThreshold = null, captureImage = null;
 function runCapture(img, photo, keepIndex) {
   captureImage = img;
   if (photo) UI.lastPhoto = photo;
+  if (photo) UI.autoShutter = !!photo.auto;
   if (!keepIndex) captureIndex = 0;
 
   let result;
@@ -419,33 +529,55 @@ function runCapture(img, photo, keepIndex) {
   }
 }
 
+function readingPayload(img, photo, result, index, extra) {
+  const candidate = result.candidates[Math.min(index || 0, result.candidates.length - 1)];
+  const distanceCm = parseFloat($("dist").value);
+  const dayField = parseInt($("dayno").value, 10);
+  const named = dayFromName(photo ? photo.filename : "");
+  return Object.assign({
+    photo_b64: photo ? photo.b64 : null,
+    filename: photo ? photo.filename : "",
+    luma32: lumaGrid(img, 32),
+    detection: {
+      arc_px: candidate.arcLength,
+      span_px: candidate.span,
+      image_width: result.width,
+      image_height: result.height,
+      confidence: Math.round(candidate.contrast * 1000) / 1000,
+    },
+    device_gps: UI.devicePosition,
+    distance_mm: isFinite(distanceCm) && distanceCm > 0 ? distanceCm * 10 : null,
+    day_index: isFinite(dayField) && dayField > 0 ? dayField : named,
+    auto_shutter: !!(photo && photo.auto),
+    captured_at: new Date().toISOString(),
+  }, extra || {});
+}
+
+/* The same day number the backend reads out of a file name, read here too so
+   the batch can show it before anything is sent. */
+function dayFromName(filename) {
+  const stem = String(filename || "").replace(/\.[^.]*$/, "");
+  const found = stem.match(/(?:^|[^a-z0-9])(?:day|pass|round|visit|d)[\s_-]?0*(\d{1,3})(?:[^0-9]|$)/i);
+  if (!found) return null;
+  const value = parseInt(found[1], 10);
+  return value >= 1 && value <= 999 ? value : null;
+}
+
 async function saveReading() {
   const result = UI.lastResult;
   if (!result || result.err || !captureImage) { toast("Take or upload a photo first."); return; }
-  const candidate = result.candidates[Math.min(captureIndex, result.candidates.length - 1)];
   const button = $("saveread");
   button.disabled = true;
   button.textContent = "SAVING…";
 
   const forced = $("siteselect") ? $("siteselect").value : "";
-  const distanceCm = parseFloat($("dist").value);
 
   try {
-    const payload = await post("/observations", {
-      photo_b64: UI.lastPhoto ? UI.lastPhoto.b64 : null,
-      filename: UI.lastPhoto ? UI.lastPhoto.filename : "",
-      luma32: lumaGrid(captureImage, 32),
-      detection: {
-        arc_px: candidate.arcLength,
-        span_px: candidate.span,
-        image_width: result.width,
-      },
-      device_gps: UI.devicePosition,
-      distance_mm: isFinite(distanceCm) && distanceCm > 0 ? distanceCm * 10 : null,
-      label: $("rname").value.trim(),
-      site_id: forced || null,
-      captured_at: new Date().toISOString(),
-    });
+    const payload = await post("/observations", readingPayload(
+      captureImage, UI.lastPhoto, result, captureIndex, {
+        label: $("rname").value.trim(),
+        site_id: forced || null,
+      }));
 
     renderPosition(payload);
     const site = payload.site;
@@ -477,6 +609,87 @@ async function saveReading() {
   }
 }
 
+/* ==================== A FOLDER OF DAILY PASSES ====================
+   Eighteen photographs of one crack, one a morning, uploaded in one go.
+   They are measured and saved strictly in order, because the second photo
+   of a spot has to find the first one already in the record before it can
+   be recognised as the same place.
+
+   Every file gets a line saying what happened to it. A file the detector
+   cannot find a crack in is reported and skipped, not silently dropped —
+   a missing day would bend the growth line and nobody would know why.   */
+async function runBatch(files) {
+  const host = $("batch");
+  const ordered = [...files].sort((a, b) => {
+    const da = dayFromName(a.name), db = dayFromName(b.name);
+    if (da && db && da !== db) return da - db;
+    return a.name.localeCompare(b.name, undefined, { numeric: true });
+  });
+
+  host.innerHTML = '<div class="card" style="margin-top:16px"><h3>UPLOADING ' +
+    ordered.length + " PHOTOGRAPHS</h3><div id=\"batchlines\"></div></div>";
+  const lines = $("batchlines");
+  const say2 = (text, kind) => {
+    const row = document.createElement("div");
+    row.className = "batchline " + (kind || "");
+    row.innerHTML = text;
+    lines.appendChild(row);
+    lines.scrollTop = lines.scrollHeight;
+  };
+
+  $("pick").disabled = true;
+  let saved = 0, skipped = 0, lastPayload = null;
+  for (let i = 0; i < ordered.length; i++) {
+    const file = ordered[i];
+    const counter = "<b>" + (i + 1) + "/" + ordered.length + "</b> " + esc(file.name) + " — ";
+    try {
+      const { img, photo } = await readPhoto(file);
+      const auto = autoAnalyse(img);
+      if (auto.result.err || !auto.result.candidates.length) {
+        skipped++;
+        say2(counter + "no crack found in this one. Skipped.", "warn");
+        continue;
+      }
+      const payload = await post("/observations", readingPayload(img, photo, auto.result, 0, {
+        label: "day " + (dayFromName(file.name) || (i + 1)),
+      }));
+      lastPayload = payload;
+      saved++;
+      const mm = payload.scale.length_mm;
+      say2(counter + esc(payload.site.id) + " · " +
+           (mm == null ? payload.scale.arc_px.toFixed(0) + " px" : mm.toFixed(1) + " mm") +
+           " · " + (payload.revisit ? "same spot" : "new spot") +
+           ' <span class="tiny">(' + esc(payload.timing.source) + ")</span>", "ok");
+      // Let the browser paint between files; eighteen full-size images in a
+      // tight loop otherwise freeze the tab for the whole upload.
+      await new Promise((done) => setTimeout(done, 0));
+    } catch (error) {
+      skipped++;
+      say2(counter + esc(error.message), "bad");
+    }
+  }
+  $("pick").disabled = false;
+
+  if (lastPayload) {
+    renderPosition(lastPayload);
+    UI.siteId = lastPayload.site.id;
+  }
+  say2("<b>Done.</b> " + saved + " saved, " + skipped + " skipped.", saved ? "ok" : "warn");
+  await refreshAll();
+  renderGrowth();
+  if (lastPayload) {
+    say("msg", "<b>" + saved + " photographs saved.</b> Open <b>GROWTH</b> for the curve, " +
+        "or <b>REPORT</b> for the whole record of this crack.", "ok");
+  }
+}
+
+/* "2026-09-06T19:11:38.802Z" -> "2026-09-06 19:11:38". Milliseconds and a
+   trailing Z are noise on a panel somebody reads with their eyes. */
+function stampText(value) {
+  if (!value) return "not recorded";
+  return esc(String(value).replace("T", " ").slice(0, 19));
+}
+
 function renderPosition(payload) {
   const p = payload.position;
   const meta = payload.exif || {};
@@ -488,25 +701,43 @@ function renderPosition(payload) {
       "page to use your location before capturing.</div>";
     return;
   }
+  const fromPhoto = String(p.source || "").indexOf("exif") === 0;
+  const timing = payload.timing || {};
   const kv = [
-    ["SOURCE", p.source === "exif" ? "the photo's own EXIF" :
-               p.source === "device" ? "this device's GPS" : "typed in"],
-    ["ACCURACY", p.accuracy_m != null ? (+p.accuracy_m).toFixed(1) + " m" : "not reported"],
+    ["LATITUDE", p.lat == null ? "—" : (+p.lat).toFixed(6) + "°"],
+    ["LONGITUDE", p.lon == null ? "—" : (+p.lon).toFixed(6) + "°"],
+    ["DEG MIN SEC", esc(p.dms || "—")],
     ["ALTITUDE", p.altitude_m != null ? (+p.altitude_m).toFixed(1) + " m" : "not reported"],
-    ["HEADING", p.heading_deg != null ? (+p.heading_deg).toFixed(0) + "° from north" : "not reported"],
-    ["CAMERA", meta.make ? esc(meta.make + " " + (meta.model || "")) : "not reported"],
-    ["TAKEN", meta.taken_at ? esc(meta.taken_at.replace("T", " ")) : "not in the file"],
+    ["ACCURACY", p.accuracy_m != null ? "± " + (+p.accuracy_m).toFixed(1) + " m" : "not reported"],
+    ["HEADING", p.heading_deg != null ? (+p.heading_deg).toFixed(0) + "° from true north"
+                                      : "not reported"],
+    ["SOURCE", fromPhoto ? "the photo's own EXIF" :
+               p.source === "manual" ? "typed in" : "this device's GPS"],
+    ["SHUTTER TIME", stampText(meta.taken_at || timing.captured_at)],
+    ["GPS CLOCK (UTC)", meta.gps_time_utc ? stampText(meta.gps_time_utc) : "not in the file"],
+    ["CAMERA", meta.make ? esc(meta.make + " " + (meta.model || "")) +
+               (meta.written_by_raahi ? " (this app, at the shutter)" : "") : "not reported"],
     ["SPOT", esc(payload.site.id)],
-    ["FINGERPRINT", esc(payload.fingerprint || "not computed")],
+    ["SCENE FINGERPRINT", esc(payload.fingerprint || "not computed")],
   ];
+
+  // The line that answers "where does the number live?". Either the camera
+  // wrote it, or we did — and if we did, say which tags went in.
+  const stamp = p.written_into_photo
+    ? '<div class="note ok" style="margin-top:12px"><b>Written into the file.</b> ' +
+      esc(p.exif_note) + '<div class="tiny mono" style="margin-top:6px">' +
+      esc((p.exif_tags || []).join(" · ")) + "</div></div>"
+    : '<div class="tiny" style="margin-top:12px">' + esc(p.exif_note || "") + "</div>";
+
   host.innerHTML =
-    '<div class="gps"><div><span class="srcpill ' + esc(p.source) + '">' +
-      (p.source === "exif" ? "from the photo" : p.source === "device" ? "from this device" : "manual") +
+    '<div class="gps"><div><span class="srcpill ' + esc(fromPhoto ? "exif" : p.source) + '">' +
+      (fromPhoto ? "from the photo" : p.source === "manual" ? "manual" : "from this device") +
     '</span></div>' +
     '<div class="coord">' + esc(p.text) + "</div>" +
     '<dl class="kv">' + kv.map((r) => "<dt>" + r[0] + "</dt><dd>" + r[1] + "</dd>").join("") + "</dl>" +
     (p.map_url ? '<div><a href="' + esc(p.map_url) + '" target="_blank" rel="noopener">' +
                  "open this spot on a map →</a></div>" : "") +
+    stamp +
     "</div>";
 }
 
@@ -799,6 +1030,12 @@ function drawChart(report) {
 }
 
 /* ==================== SEAL LIST ==================== */
+function bandPill(band) {
+  const cls = { "URGENT": "bad", "HIGH": "warn", "MEDIUM": "", "LOW": "",
+                "STABLE": "ok", "NO RATE YET": "" }[band] || "";
+  return '<span class="pill ' + cls + '">' + esc(band) + "</span>";
+}
+
 async function renderSchedule() {
   let data;
   try {
@@ -820,23 +1057,251 @@ async function renderSchedule() {
     : '<div class="empty">No lead time yet. It needs one spot photographed on two ' +
       "different days, with the crack growing between them.</div>";
 
+  const risk = data.risk || {};
+  $("formulabox").innerHTML =
+    '<div class="eq"><span class="term measured">growth rate<em>mm / day, measured</em></span>' +
+    '<span class="op">×</span>' +
+    '<span class="term">rainfall forecast<em>next ' + esc(risk.window_days || 14) + ' days</em></span>' +
+    '<span class="op">×</span>' +
+    '<span class="term">traffic<em>commercial vehicles / day</em></span>' +
+    '<span class="op">=</span>' +
+    '<span class="term out">priority<em>0 – 100</em></span></div>' +
+    (risk.scored
+      ? '<div class="leadrow" style="margin-top:16px">' +
+        "<div><b>" + risk.urgent + '</b><span>URGENT</span></div>' +
+        "<div><b>" + risk.high + '</b><span>HIGH</span></div>' +
+        "<div><b>" + (risk.rain_window_mm == null ? "—" : risk.rain_window_mm) +
+          '</b><span>MM OF RAIN EXPECTED</span></div>' +
+        "<div><b>" + risk.no_rate_yet + '</b><span>NOT SCORED — ONE PHOTO ONLY</span></div>' +
+        "</div>"
+      : "");
+
   const rows = data.rows;
+  const num = (v, unit, digits) => v == null ? "—" : (+v).toFixed(digits == null ? 2 : digits) +
+    (unit ? " " + unit : "");
+
   $("sched").innerHTML = !rows.length
     ? '<div class="empty"><b>The list is empty, and that is correct.</b><br>' +
       "Nothing here is filled in from a demo file. Photograph a crack and it appears.</div>"
-    : '<div class="tscroll"><table><thead><tr><th>SPOT</th><th>LATEST</th><th>GROWTH / WEEK</th>' +
-      "<th>LEAD TIME</th><th>DAYS LEFT</th><th>ACTION</th></tr></thead><tbody>" +
+    : '<div class="tscroll"><table><thead><tr><th>#</th><th>SPOT</th><th>LATEST</th>' +
+      "<th>GROWTH</th><th>× RAIN</th><th>× TRAFFIC</th><th>= EFFECTIVE</th>" +
+      "<th>PRIORITY</th><th>SEAL BY</th><th>ACTION</th></tr></thead><tbody>" +
       rows.map((r) =>
-        "<tr><td>" + esc(r.name) + '<div class="tiny">' + esc(r.site_id) + " · " +
-          r.observations + " photos</div></td>" +
+        "<tr><td class=tiny>" + (r.rank == null ? "—" : r.rank) + "</td>" +
+        "<td>" + esc(r.name) + '<div class="tiny">' + esc(r.site_id) + " · " +
+          r.observations + " photos · " + esc(r.road_class) + "</div></td>" +
         "<td>" + (r.latest_mm == null ? "—" : r.latest_mm + " mm") + "</td>" +
-        "<td" + (r.mm_per_week > 0 ? ' class="up"' : "") + ">" +
-          (r.mm_per_week == null ? "—" : (r.mm_per_week > 0 ? "+" : "") + r.mm_per_week + " mm") +
-        "</td>" +
-        "<td>" + (r.lead_time_days == null ? "—" : r.lead_time_days + " d") + "</td>" +
-        "<td>" + (r.days_remaining == null ? "—" : Math.max(0, r.days_remaining) + " d") + "</td>" +
+        "<td" + (r.mm_per_day > 0 ? ' class="up"' : "") + ">" +
+          num(r.mm_per_day, "mm/d", 2) +
+          '<div class="tiny">' + (r.fit_r2 == null ? "no fit" : "R² " + r.fit_r2) + "</div></td>" +
+        "<td>" + num(r.rain_factor, "", 2) +
+          '<div class="tiny">' + (r.rain_mm == null ? "no position" : r.rain_mm + " mm · " +
+            esc(r.rain_basis)) + "</div></td>" +
+        "<td>" + num(r.traffic_factor, "", 2) + "</td>" +
+        "<td>" + num(r.effective_mm_per_day, "mm/d", 2) + "</td>" +
+        "<td>" + (r.priority == null ? "—" : "<b>" + r.priority + "</b>") + "<br>" +
+          bandPill(r.band) + "</td>" +
+        "<td>" + (r.monsoon_days_remaining == null ? "—"
+                  : Math.max(0, Math.round(r.monsoon_days_remaining)) + " d") +
+          '<div class="tiny">' + (r.days_bought_by_rain ? "rain costs " +
+            r.days_bought_by_rain + " d" : "") + "</div></td>" +
         "<td>" + verdictPill(r.verdict) + "</td></tr>").join("") +
-      "</tbody></table></div>";
+      "</tbody></table></div>" +
+      '<p class="tiny" style="margin-top:12px">SEAL BY is the crossing date at the effective ' +
+      "rate — growth with the rain in it. The dry-fit date is on the GROWTH tab; where the " +
+      "two differ, the difference is what the monsoon costs.</p>";
+}
+
+/* ==================== REPORT ==================== */
+function reportRow(label, value, note) {
+  return "<div><span>" + esc(label) + "</span><b>" + value + "</b>" +
+         (note ? '<em class="tiny">' + esc(note) + "</em>" : "") + "</div>";
+}
+
+async function renderReport() {
+  const picker = $("reportpick");
+  picker.innerHTML = UI.sites.map((s) =>
+    '<option value="' + esc(s.id) + '">' + esc(s.name) + "</option>").join("");
+  const host = $("report");
+
+  if (!UI.sites.length) {
+    host.innerHTML = '<div class="empty"><b>No spot to report on yet.</b><br>' +
+      "Photograph a crack on the CAPTURE tab. A report needs at least two passes to say " +
+      "anything about growth, and the deck's own answer is three weeks of them.</div>";
+    return;
+  }
+  if (!UI.reportId || !UI.sites.some((s) => s.id === UI.reportId)) {
+    UI.reportId = (currentSite() || UI.sites[0]).id;
+  }
+  picker.value = UI.reportId;
+
+  let data;
+  try {
+    data = await api("/report/" + encodeURIComponent(UI.reportId));
+  } catch (error) {
+    host.innerHTML = '<div class="note bad">' + esc(error.message) + "</div>";
+    return;
+  }
+
+  const site = data.site, g = data.predict, sched = data.schedule, v = data.verify;
+  $("cvpd").value = sched.traffic.basis === "counted"
+    ? sched.traffic.commercial_vehicles_per_day : "";
+  if ($("roadclass").options.length) $("roadclass").value = site.road_class;
+
+  const days = (value) => value == null ? "—" : Math.round(value) + " days";
+  const mm = (value, digits) => value == null ? "—" : (+value).toFixed(digits == null ? 1 : digits) + " mm";
+
+  /* ---- 1 · DETECT ---- */
+  const detect =
+    '<div class="card"><h3>1 · DETECT — WHAT WAS PHOTOGRAPHED</h3>' +
+    '<div class="rrows">' +
+      reportRow("Passes stored", data.detect.passes,
+                data.detect.measured + " of them measured in millimetres") +
+      reportRow("Taken by the automatic shutter", data.detect.auto_shutter,
+                "fired by the detector, not by a person") +
+      reportRow("Days covered", days(data.track.days_covered),
+                "first photograph to last") +
+      reportRow("Baseline", mm(g.baseline ? g.baseline.length_mm : null),
+                g.baseline ? shortDate(g.baseline.at) : "none yet") +
+      reportRow("Latest", mm(g.latest ? g.latest.length_mm : null),
+                g.latest ? shortDate(g.latest.at) : "none yet") +
+      reportRow("Growth since baseline", mm(g.total_growth_mm),
+                "the number a biased ruler cannot spoil — a constant bias subtracts out") +
+    "</div>" +
+    '<p class="tiny" style="margin-top:12px">' + esc(data.detect.note) + "</p></div>";
+
+  /* ---- 2 · TRACK ---- */
+  const track =
+    '<div class="card"><h3>2 · TRACK — IS IT THE SAME METRE OF ROAD?</h3>' +
+    '<div class="gps"><div class="coord">' + esc(site.position_text || "no position") + "</div>" +
+    '<dl class="kv">' +
+      "<dt>DEG MIN SEC</dt><dd>" + esc(site.position_dms || "—") + "</dd>" +
+      "<dt>CAMERA HEADING</dt><dd>" + (site.direction_deg == null ? "—" :
+        (+site.direction_deg).toFixed(0) + "° from true north") + "</dd>" +
+      "<dt>PASSES WITH A FIX</dt><dd>" + data.track.with_position + " of " +
+        data.detect.passes + "</dd>" +
+      "<dt>FIX FROM THE CAMERA</dt><dd>" + data.track.position_from_camera +
+        " read out of the photo's own EXIF</dd>" +
+      "<dt>FIX WRITTEN BY RAAHI</dt><dd>" + data.track.position_written_by_us +
+        " stamped into the file at the shutter</dd>" +
+      "<dt>MATCH RADIUS</dt><dd>" + data.track.radius_m + " m, heading within " +
+        data.track.heading_tolerance_deg + "°</dd>" +
+    "</dl>" +
+    (site.map_url ? '<div><a href="' + esc(site.map_url) + '" target="_blank" ' +
+      'rel="noopener">open this spot on a map →</a></div>' : "") +
+    "</div>" +
+    '<p class="tiny" style="margin-top:12px">' + esc(data.track.note) + "</p></div>";
+
+  /* ---- 3 · PREDICT ---- */
+  const predict =
+    '<div class="card"><h3>3 · PREDICT — HOW FAST, AND WHEN</h3>' +
+    (g.verdict === "SEAL NOW"
+      ? '<div class="alert"><div class="t">SEAL NOW</div><div class="s">' +
+        esc(g.headline) + "</div></div>"
+      : '<div class="calm"><div class="t">' + esc(g.headline) + '</div>' +
+        '<div class="mut" style="margin-top:8px">' + esc(g.detail) + "</div></div>") +
+    '<div class="rrows" style="margin-top:14px">' +
+      reportRow("Growth rate", g.mm_per_day == null ? "—" : g.mm_per_day + " mm/day",
+                g.mm_per_week == null ? "" : g.mm_per_week + " mm a week") +
+      reportRow("Fit quality", g.fit_r2 == null ? "—" : "R² " + g.fit_r2,
+                g.fit_r2 != null && g.fit_r2 < 0.6
+                  ? "loose — treat the date as a rough one"
+                  : "least squares over " + g.readings + " readings") +
+      reportRow("Seal threshold", mm(g.threshold_mm, 0), "set on the GROWTH tab") +
+      reportRow("Predicted crossing", g.predicted_cross_date
+                ? shortDate(g.predicted_cross_date) : "—", "at the measured rate, no rain term") +
+      reportRow("Lead time", days(g.lead_time_days),
+                "first sighting to predicted failure — the figure nobody publishes") +
+      reportRow("Days left", g.days_remaining == null ? "—"
+                : Math.max(0, Math.round(g.days_remaining)) + " days", "from today") +
+    "</div></div>";
+
+  /* ---- 4 · SCHEDULE ---- */
+  const schedule =
+    '<div class="card"><h3>4 · SCHEDULE — GROWTH × RAIN × TRAFFIC</h3>' +
+    '<div class="eq"><span class="term measured">' +
+      (sched.growth.mm_per_day == null ? "—" : sched.growth.mm_per_day) +
+      "<em>mm / day measured</em></span><span class=\"op\">×</span>" +
+    '<span class="term">' + sched.rain.factor + "<em>rain, " +
+      (sched.rain.expected_mm == null ? "no position" : sched.rain.expected_mm + " mm in " +
+       sched.rain.window_days + " days") + "</em></span><span class=\"op\">×</span>" +
+    '<span class="term">' + sched.traffic.factor + "<em>" +
+      esc(sched.traffic.road_class_label.toLowerCase()) + "</em></span>" +
+      "<span class=\"op\">=</span>" +
+    '<span class="term out">' + (sched.score == null ? "—" : sched.score) +
+      "<em>priority</em></span></div>" +
+    '<div class="note ' + (sched.band === "URGENT" ? "bad" : sched.band === "HIGH" ? "warn" : "ok") +
+      '" style="margin-top:14px"><b>' + esc(sched.band) + ".</b> " + esc(sched.action) + "</div>" +
+    '<div class="rrows" style="margin-top:14px">' +
+      reportRow("The working", esc(sched.formula || "—"), "check it by hand") +
+      reportRow("Rain", sched.rain.expected_mm == null ? "—" : sched.rain.expected_mm + " mm",
+                sched.rain.note) +
+      reportRow("Traffic", sched.traffic.commercial_vehicles_per_day + " cv/day",
+                sched.traffic.note) +
+      reportRow("Seal by, with the rain", sched.monsoon_cross_date
+                ? shortDate(sched.monsoon_cross_date) : "—",
+                sched.days_bought_by_rain
+                  ? "the monsoon brings it forward by " + sched.days_bought_by_rain + " days"
+                  : "same as the dry-weather date") +
+      reportRow("Season", esc(sched.rain.phase),
+                sched.rain.station ? "nearest station " + esc(sched.rain.station) + ", " +
+                  sched.rain.distance_km + " km away" : "") +
+    "</div>" +
+    '<p class="tiny" style="margin-top:12px">The score is logarithmic between ' +
+      sched.score_scale.floor_mm_per_day + " and " + sched.score_scale.ceiling_mm_per_day +
+      " mm/day effective, so a spot four times worse reads as clearly worse instead of " +
+      "both pinning to 100. Both constants are chosen, not fitted.</p></div>";
+
+  /* ---- 5 · VERIFY ---- */
+  const verify =
+    '<div class="card"><h3>5 · VERIFY — DID THE LAST PASS AGREE?</h3>' +
+    '<div class="calm"><div class="t">' + esc(v.state) + "</div>" +
+    '<div class="mut" style="margin-top:8px">' + esc(v.note) + "</div></div>" +
+    (v.expected_step_mm == null ? "" :
+      '<div class="rrows" style="margin-top:14px">' +
+      reportRow("Last pass gained", mm(v.last_step_mm), "measured") +
+      reportRow("The trend said", mm(v.expected_step_mm), "over " + v.gap_days + " days") +
+      "</div>") +
+    '<p class="tiny" style="margin-top:12px">There is no repair record in this build, so ' +
+      "this is the honest version of the deck's fifth box: whether the readings themselves " +
+      "show the crack stopping. A length that stops growing after a crew visited is what a " +
+      "seal looks like from here.</p></div>";
+
+  /* ---- every pass ---- */
+  const passes =
+    '<div class="card"><h3>EVERY PASS, DAY BY DAY</h3><div class="tscroll">' +
+    "<table><thead><tr><th>DAY</th><th>WHEN</th><th>LENGTH</th><th>GROWTH</th>" +
+    "<th>POSITION</th><th>FIX</th><th>SHUTTER</th><th>WHY THE SAME SPOT</th>" +
+    "</tr></thead><tbody>" +
+    data.passes.map((row) =>
+      "<tr><td><b>" + (row.day == null ? "—" : row.day) + "</b></td>" +
+      "<td class=tiny>" + esc(shortDate(row.captured_at)) + "</td>" +
+      "<td>" + (row.length_mm == null ? row.arc_px + " px" : row.length_mm + " mm") + "</td>" +
+      "<td" + (row.growth_since_baseline_mm > 0 ? ' class="up"' : "") + ">" +
+        (row.growth_since_baseline_mm == null ? "—"
+         : (row.growth_since_baseline_mm > 0 ? "+" : "") + row.growth_since_baseline_mm + " mm") +
+      "</td>" +
+      "<td class=tiny>" + (row.lat == null ? "none"
+        : (+row.lat).toFixed(5) + ", " + (+row.lon).toFixed(5) +
+          (row.accuracy_m == null ? "" : " ± " + (+row.accuracy_m).toFixed(0) + " m")) + "</td>" +
+      "<td class=tiny>" + esc(row.gps_source || "none") +
+        (row.geotag_written ? '<br><span class="up">written into the file</span>' : "") + "</td>" +
+      "<td class=tiny>" + (row.auto_shutter ? "automatic" : "pressed") + "</td>" +
+      "<td class=tiny>" + esc(row.match ? row.match.why : "") + "</td></tr>").join("") +
+    "</tbody></table></div></div>";
+
+  host.innerHTML =
+    '<div class="card" style="margin-bottom:18px"><h3>' + esc(site.id) + " · " +
+      esc(site.name) + "</h3>" +
+      '<p class="tiny">' + (site.road_name ? esc(site.road_name) + " · " : "") +
+      (site.ward ? esc(site.ward) + " · " : "") + esc(site.road_class_label) +
+      " · threshold " + mm(site.threshold_mm, 0) + "</p></div>" +
+    detect + '<div style="height:18px"></div>' +
+    track + '<div style="height:18px"></div>' +
+    predict + '<div style="height:18px"></div>' +
+    schedule + '<div style="height:18px"></div>' +
+    verify + '<div style="height:18px"></div>' +
+    passes;
 }
 
 /* ==================== DETECTION QUALITY ==================== */
@@ -990,9 +1455,10 @@ function switchTab(target) {
   if (pageId === "p4") renderSchedule();
   if (pageId === "p5") renderQuality();
   if (pageId === "p6") renderTrials();
+  if (pageId === "p7") renderReport();
   $("apihint").textContent = { p2: "GET /api/sites", p3: "GET /api/sites/<id>",
     p4: "GET /api/schedule", p5: "GET /api/metrics/detection",
-    p1: "POST /api/observations" }[pageId] || "GET /api/state";
+    p7: "GET /api/report/<id>", p1: "POST /api/observations" }[pageId] || "GET /api/state";
 }
 
 tabs.forEach((tab) => tab.addEventListener("click", () => switchTab(tab)));
@@ -1034,7 +1500,17 @@ async function refreshAll() {
     ].map((r) => "<div><b>" + esc(r[0]) + "</b><span>" + esc(r[1]) + "</span></div>").join("");
 
     renderSiteChooser();
+    if (!UI.roadClasses.length) {
+      try {
+        const table = await api("/traffic");
+        UI.roadClasses = table.classes;
+        $("roadclass").innerHTML = table.classes.map((c) =>
+          '<option value="' + esc(c.key) + '">' + esc(c.label) + " · " + c.cvpd +
+          " cv/day</option>").join("");
+      } catch (error) { /* the class list is a convenience, not a requirement */ }
+    }
     if ($("p2").classList.contains("on")) renderSites();
+    if ($("p7").classList.contains("on")) renderReport();
   } catch (error) {
     $("cal").innerHTML = '<span class="dot" style="background:var(--red)"></span>BACKEND OFFLINE';
     toast("Cannot reach the backend. Is python3 server.py still running?");
@@ -1066,7 +1542,18 @@ document.querySelectorAll("#src button").forEach((button) => {
   });
 });
 $("pick").addEventListener("click", () => $("file").click());
-onFileChosen($("file"), (img, photo) => runCapture(img, photo));
+$("file").addEventListener("change", () => {
+  const files = [...$("file").files];
+  $("file").value = "";                    // so the same folder can be re-chosen
+  if (!files.length) return;
+  if (files.length === 1) {
+    readPhoto(files[0]).then(({ img, photo }) => runCapture(img, photo))
+                       .catch((error) => toast(error.message));
+    return;
+  }
+  $("batch").innerHTML = "";
+  runBatch(files);
+});
 $("saveread").addEventListener("click", saveReading);
 
 $("t2").addEventListener("input", () => {
@@ -1159,6 +1646,26 @@ $("runeval").addEventListener("click", async () => {
 });
 
 // Training visibility: a link in the footer, or ?training=1 in the address bar.
+// Report tab
+$("reportpick").addEventListener("change", () => {
+  UI.reportId = $("reportpick").value;
+  renderReport();
+});
+
+$("savecontext").addEventListener("click", async () => {
+  if (!UI.reportId) { toast("Choose a spot first."); return; }
+  const count = parseFloat($("cvpd").value);
+  try {
+    await post("/sites/" + encodeURIComponent(UI.reportId) + "/context", {
+      road_class: $("roadclass").value,
+      commercial_vehicles_per_day: isFinite(count) && count >= 0 ? count : null,
+    });
+    await refreshAll();
+    renderReport();
+    toast("Road set. The traffic term is recomputed.", "ok");
+  } catch (error) { toast(error.message); }
+});
+
 $("trainlink").addEventListener("click", () => {
   setTrainingMode(!document.body.classList.contains("training"));
 });

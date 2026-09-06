@@ -25,8 +25,9 @@
   <button class="tab" data-p="p2"><span class="n">02</span>SPOTS</button>
   <button class="tab" data-p="p3"><span class="n">03</span>GROWTH</button>
   <button class="tab" data-p="p4"><span class="n">04</span>SEAL LIST</button>
-  <button class="tab" data-p="p5"><span class="n">05</span>DETECTION QUALITY</button>
-  <button class="tab train-only" data-p="p6"><span class="n">06</span>TRAINING</button>
+  <button class="tab" data-p="p7"><span class="n">05</span>REPORT</button>
+  <button class="tab" data-p="p5"><span class="n">06</span>DETECTION QUALITY</button>
+  <button class="tab train-only" data-p="p6"><span class="n">07</span>TRAINING</button>
   <div id="ink"></div>
 </nav>
 
@@ -58,8 +59,13 @@
         <li>Reads GPS out of the photo's own EXIF, or off the device when capturing live</li>
         <li>Decides whether today's photo is yesterday's crack — position, camera heading
             and a fingerprint of the scene itself</li>
+        <li>Writes the position into the file's own hidden EXIF when the shutter fires,
+            so a webcam frame ends up carrying its coordinates the way a phone photo does</li>
+        <li>Presses its own shutter when a crack holds still in front of the camera</li>
         <li>Fits a growth rate across passes and dates the threshold crossing</li>
         <li>Reports <b>lead time</b>: days between first sighting and predicted failure</li>
+        <li>Ranks the seal list by <b>growth rate × rainfall forecast × traffic</b>,
+            with every term and its source printed beside the answer</li>
         <li>Scores a damage detector per class, on a named split, sample size stated</li>
       </ul>
     </div>
@@ -74,6 +80,11 @@
         <li>Daylight, close range, camera roughly overhead. Not heavy rain</li>
         <li>Absolute length carries a small constant bias. Growth is a subtraction,
             so the bias cancels — that is why growth is the number we report</li>
+        <li>No live weather feed. The rain term uses bundled monthly normals for Indian
+            stations, which say what a fortnight usually brings, not what next fortnight
+            will bring. Post a real forecast and it is used instead</li>
+        <li>No traffic counts. The traffic term uses road-class defaults until a
+            municipality supplies its own, and every answer says which it used</li>
       </ul>
     </div>
   </div>
@@ -86,8 +97,16 @@
       <tbody>
         <tr><td class="mono">raahi_backend/exif.py</td><td>Reads EXIF from JPEG and HEIC</td>
             <td>GPS position, heading, focal length</td></tr>
+        <tr><td class="mono">raahi_backend/geotag.py</td><td>Writes GPS into a photograph</td>
+            <td>APP1 / eXIf block assembled by hand at the shutter</td></tr>
         <tr><td class="mono">raahi_backend/geo.py</td><td>Decides if two photos are the same spot</td>
             <td>Distance + heading + 64-bit scene hash</td></tr>
+        <tr><td class="mono">raahi_backend/rainfall.py</td><td>What rain is coming</td>
+            <td>Monthly normals by nearest station, or a real forecast</td></tr>
+        <tr><td class="mono">raahi_backend/traffic.py</td><td>What load the road carries</td>
+            <td>Commercial vehicles a day, by class or counted</td></tr>
+        <tr><td class="mono">raahi_backend/risk.py</td><td>Orders the seal list</td>
+            <td>growth × rain × traffic, with the working returned</td></tr>
         <tr><td class="mono">raahi_backend/growth.py</td><td>Turns readings into a rate and a date</td>
             <td>Least-squares fit, lead time in days</td></tr>
         <tr><td class="mono">raahi_backend/metrics.py</td><td>Scores a detector</td>
@@ -125,14 +144,22 @@
       </div>
 
       <div id="pickwrap" style="margin-top:16px">
-        <button class="btn g" id="pick">CHOOSE A PHOTO</button>
+        <button class="btn g" id="pick">CHOOSE PHOTOS</button>
         <p class="tiny" style="margin-top:10px">
           A photo straight off a phone carries its own GPS. That is what lets the app
           find this spot again tomorrow.
         </p>
+        <p class="tiny">
+          Choose several at once — a folder of daily passes, day 1 to day 18 — and they
+          are measured and saved in order, one after another. A file named
+          <span class="mono">day07.jpg</span> is taken as day 7 when its metadata carries
+          no date of its own.
+        </p>
       </div>
       <div id="camwrap" style="margin-top:16px"></div>
-      <input type="file" id="file" accept="image/*" style="display:none" aria-label="Choose a photo">
+      <div id="batch"></div>
+      <input type="file" id="file" accept="image/*" multiple style="display:none"
+             aria-label="Choose photos">
 
       <label class="f" for="rname">LABEL (OPTIONAL)</label>
       <input type="text" id="rname" placeholder="Morning round" aria-label="Reading label">
@@ -150,6 +177,14 @@
         <label class="f" for="dist">PHOTO TAKEN FROM ABOUT (cm)</label>
         <input type="number" id="dist" value="120" step="5" min="5"
                aria-label="Camera distance in centimetres">
+        <label class="f" for="dayno">DAY NUMBER IN THE SERIES (OPTIONAL)</label>
+        <input type="number" id="dayno" placeholder="blank unless the dates were stripped"
+               step="1" min="1" aria-label="Day number in the series">
+        <p class="tiny" style="margin-top:8px">
+          Only used when a photo carries no date of its own. The first day number seen for
+          a spot fixes day one; the rest are counted from it, so eighteen photographs
+          uploaded in one sitting still land on eighteen different days.
+        </p>
         <p class="tiny" style="margin-top:8px">
           Used only when no calibration exists: with the lens focal length from EXIF,
           the distance alone gives millimetres per pixel.
@@ -248,10 +283,56 @@
       metre of road more than once, which is why no Indian road authority reports it today.
     </p>
   </div>
+  <div class="card" style="margin-bottom:18px">
+    <h3>HOW THE ORDER IS DECIDED</h3>
+    <div class="formula" id="formulabox"></div>
+    <p class="tiny" style="margin-top:12px">
+      Growth is measured on this machine, from photographs of that spot. Rain and traffic
+      are multipliers, each with the figure behind it and where it came from printed in the
+      table. A spot with no growth rate yet is not scored at all — it drops to the bottom,
+      because never having been re-photographed is not the same as being safe.
+    </p>
+  </div>
   <div class="card">
-    <h3>RANKED BY TIME REMAINING</h3>
+    <h3>RANKED BY GROWTH × RAIN × TRAFFIC</h3>
     <div id="sched"></div>
   </div>
+</section>
+
+<!-- ================= 05 REPORT ================= -->
+<section class="page" id="p7" aria-labelledby="report-title">
+  <h2 id="report-title">The <em>report</em></h2>
+  <p class="lede">One crack, from the first photograph to the sealing date — detect, track,
+     predict, schedule, verify. Everything on this page came out of photographs taken on
+     this machine; nothing is filled in.</p>
+
+  <div class="card" style="margin-bottom:18px">
+    <div class="pickrow">
+      <div style="flex:1">
+        <label class="f" for="reportpick" style="margin-top:0">SPOT</label>
+        <select id="reportpick" aria-label="Choose a spot to report on"></select>
+      </div>
+      <div style="flex:1">
+        <label class="f" for="roadclass" style="margin-top:0">ROAD CLASS</label>
+        <select id="roadclass" aria-label="Road class for this spot"></select>
+      </div>
+      <div style="flex:1">
+        <label class="f" for="cvpd" style="margin-top:0">COMMERCIAL VEHICLES / DAY</label>
+        <input type="number" id="cvpd" min="0" step="10"
+               placeholder="leave blank for the class default"
+               aria-label="Commercial vehicles per day">
+      </div>
+      <div style="align-self:end">
+        <button class="btn ghost" id="savecontext">SET</button>
+      </div>
+    </div>
+    <p class="tiny" style="margin-top:10px">
+      Two of the three terms in the formula describe the road, not the crack. Set them here
+      and the report says which figures were supplied and which are class defaults.
+    </p>
+  </div>
+
+  <div id="report"><div class="ph">Choose a spot.</div></div>
 </section>
 
 <!-- ================= 05 DETECTION QUALITY ================= -->

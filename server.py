@@ -24,6 +24,7 @@ import json
 import os
 import socket
 import sys
+import urllib.parse
 import threading
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -32,6 +33,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from raahi_backend.api import Api, ApiError, MAX_PHOTO_BYTES
 from raahi_backend.store import Store
+from raahi_backend import rainfall
 
 PORT = int(os.environ.get("RAAHI_PORT", "8000"))
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -48,6 +50,10 @@ MIME = {
 
 STORE = Store(DATA_DIR)
 API = Api(STORE)
+
+# A real table of rainfall normals, if somebody has put one next to the data.
+# Silent when there is none: the built-in figures are the documented default.
+rainfall.try_load(DATA_DIR)
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -135,6 +141,12 @@ class Handler(BaseHTTPRequestHandler):
     def _route_get(self, path):
         parts = [p for p in path.strip("/").split("/") if p]      # ['api', ...]
         rest = parts[1:]
+        query = urllib.parse.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
+
+        def first(name):
+            values = query.get(name)
+            return values[0] if values else None
+
         if rest == ["state"]:
             return API.get_state()
         if rest == ["sites"]:
@@ -149,6 +161,14 @@ class Handler(BaseHTTPRequestHandler):
             return API.get_calibration()
         if rest == ["metrics", "detection"]:
             return API.get_detection_quality()
+        if rest == ["risk"]:
+            return API.get_risk()
+        if rest == ["rainfall"]:
+            return API.get_rainfall(first("lat"), first("lon"), first("days"))
+        if rest == ["traffic"]:
+            return API.get_traffic_classes()
+        if len(rest) == 2 and rest[0] == "report":
+            return API.get_report(rest[1])
         raise ApiError("Unknown endpoint: %s" % path, 404)
 
     def do_POST(self):
@@ -166,6 +186,10 @@ class Handler(BaseHTTPRequestHandler):
                 status, payload = API.post_threshold(body)
             elif parts == ["metrics", "detection"]:
                 status, payload = API.post_detection_eval(body)
+            elif parts == ["rainfall"]:
+                status, payload = API.post_rainfall(body)
+            elif len(parts) == 3 and parts[0] == "sites" and parts[2] == "context":
+                status, payload = API.post_site_context(parts[1], body)
             else:
                 raise ApiError("Unknown endpoint: %s" % path, 404)
             self._json(status, payload)

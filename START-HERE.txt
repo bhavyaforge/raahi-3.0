@@ -43,13 +43,36 @@ TRY IT WITHOUT GOING OUTSIDE
 
     python3 raahi.py demo
 
-Writes five photographs of a crack that grows a little each day, each one
-carrying real GPS in its metadata. Upload them in order on the CAPTURE
-tab. Photo 1 says "New spot recorded". Photo 2 onward says "Same spot as
+Writes eighteen photographs of a crack that grows a little each morning,
+day 1 to day 18, each one carrying real GPS in its metadata. On the
+CAPTURE tab press "CHOOSE PHOTOS" and select the whole folder at once —
+they go up in order, with a line each saying what happened.
+
+Photo 1 says "New spot recorded". Photo 2 onward says "Same spot as
 before" and explains why — the metres from the recorded position, the
 camera heading, the scene match.
 
-Then look at GROWTH and SEAL LIST. The lead time comes out around 12 days.
+Then look at GROWTH, SEAL LIST and REPORT. The crack grows about 1.4 mm a
+day, the lead time comes out around 28 days, and the seal list ranks it by
+
+    growth rate  x  rainfall forecast  x  traffic
+
+with every term and where it came from printed beside the answer.
+
+
+THE SHUTTER PRESSES ITSELF
+--------------------------
+
+Press "Capture photo" and the camera watches its own preview. When
+something crack-shaped holds still in front of it for three frames, it
+takes the photograph by itself — nobody has to press anything, which is
+the point when the camera is bolted inside a truck.
+
+A webcam frame has no GPS of its own, so the app writes one in: the
+position, the heading, the accuracy and the time go into the file's own
+hidden EXIF at the moment of capture, exactly the way a phone does it.
+Open one of the files in data/photos afterwards in any EXIF viewer and
+the coordinates are there.
 
 
 IF SOMETHING LOOKS WRONG

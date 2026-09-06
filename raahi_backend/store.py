@@ -27,7 +27,12 @@ CREATE TABLE IF NOT EXISTS sites (
     phash         TEXT,
     threshold_mm  REAL,
     created_at    TEXT NOT NULL,
-    notes         TEXT
+    notes         TEXT,
+    road_class    TEXT,
+    commercial_vehicles_per_day REAL,
+    rain_mm_override REAL,
+    road_name     TEXT,
+    ward          TEXT
 );
 
 CREATE TABLE IF NOT EXISTS observations (
@@ -52,7 +57,11 @@ CREATE TABLE IF NOT EXISTS observations (
     photo_name    TEXT,
     label         TEXT,
     class_code    TEXT,
-    match_json    TEXT
+    match_json    TEXT,
+    day_index     INTEGER,
+    auto_shutter  INTEGER,
+    detector_confidence REAL,
+    geotag_written INTEGER
 );
 
 CREATE INDEX IF NOT EXISTS obs_by_site ON observations(site_id, captured_at);
@@ -104,6 +113,38 @@ class Store:
         self._local = threading.local()
         with self._connect() as db:
             db.executescript(SCHEMA)
+        self._migrate()
+
+    # -- migrations --------------------------------------------------------
+    #
+    # A record already on somebody's laptop must survive an upgrade. Columns
+    # added after the first release are appended here rather than in SCHEMA
+    # alone, so an existing data/raahi.db gains them on the next start and
+    # nobody has to delete their readings to run the new build.
+    MIGRATIONS = {
+        "sites": (
+            ("road_class", "TEXT"),
+            ("commercial_vehicles_per_day", "REAL"),
+            ("rain_mm_override", "REAL"),
+            ("road_name", "TEXT"),
+            ("ward", "TEXT"),
+        ),
+        "observations": (
+            ("day_index", "INTEGER"),
+            ("auto_shutter", "INTEGER"),
+            ("detector_confidence", "REAL"),
+            ("geotag_written", "INTEGER"),
+        ),
+    }
+
+    def _migrate(self):
+        db = self._connect()
+        for table, columns in self.MIGRATIONS.items():
+            have = {row[1] for row in db.execute("PRAGMA table_info(%s)" % table)}
+            for name, kind in columns:
+                if name not in have:
+                    db.execute("ALTER TABLE %s ADD COLUMN %s %s" % (table, name, kind))
+        db.commit()
 
     # -- plumbing ----------------------------------------------------------
     def _connect(self):
@@ -203,7 +244,9 @@ class Store:
         return self._rows("SELECT * FROM sites ORDER BY created_at")
 
     def update_site(self, site_id, **fields):
-        allowed = {"name", "lat", "lon", "direction_deg", "phash", "threshold_mm", "notes"}
+        allowed = {"name", "lat", "lon", "direction_deg", "phash", "threshold_mm",
+                   "notes", "road_class", "commercial_vehicles_per_day",
+                   "rain_mm_override", "road_name", "ward"}
         sets = {k: v for k, v in fields.items() if k in allowed}
         if not sets:
             return self.get_site(site_id)
@@ -237,7 +280,8 @@ class Store:
         cols = ("site_id", "captured_at", "received_at", "lat", "lon", "altitude_m",
                 "direction_deg", "accuracy_m", "gps_source", "phash", "length_mm",
                 "arc_px", "span_px", "image_width", "mm_per_px", "scale_source",
-                "photo_sha", "photo_name", "label", "class_code", "match_json")
+                "photo_sha", "photo_name", "label", "class_code", "match_json",
+                "day_index", "auto_shutter", "detector_confidence", "geotag_written")
         values = [row.get(c) for c in cols]
         obs_id = self._write(
             "INSERT INTO observations (%s) VALUES (%s)" % (",".join(cols), ",".join("?" * len(cols))),
