@@ -18,7 +18,9 @@ synthetic: it reads their EXIF, works out that they are the same spot, and
 builds the growth curve and the lead time from them. Nothing is preloaded
 into the database, so what you see on screen came from these files.
 
-Pure standard library — PNG is written by hand, EXIF assembled byte by byte.
+Pure standard library — the PNG is written by hand here, and the EXIF block
+comes from raahi_backend.geotag, the same writer the app uses when the
+shutter fires on a live camera frame.
 """
 
 import argparse
@@ -26,90 +28,30 @@ import math
 import os
 import random
 import struct
+import sys
 import zlib
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
-# --- EXIF assembly ---------------------------------------------------------
-ASCII, SHORT, LONG, RATIONAL, BYTE = 2, 3, 4, 5, 1
-
-
-def _rational(value, denominator=1000):
-    return struct.pack("<II", int(round(value * denominator)), denominator)
-
-
-def _dms(value):
-    value = abs(value)
-    degrees = int(value)
-    minutes = int((value - degrees) * 60)
-    seconds = (value - degrees - minutes / 60.0) * 3600
-    return (struct.pack("<II", degrees, 1) + struct.pack("<II", minutes, 1)
-            + struct.pack("<II", int(round(seconds * 10000)), 10000))
-
-
-def _build_ifd(entries, ifd_offset, data_offset):
-    """entries: [(tag, fmt, count, payload_bytes)] -> (ifd_bytes, data_bytes)."""
-    body = struct.pack("<H", len(entries))
-    pool = b""
-    cursor = data_offset
-    for tag, fmt, count, payload in sorted(entries, key=lambda e: e[0]):
-        if len(payload) <= 4:
-            value = payload + b"\x00" * (4 - len(payload))
-        else:
-            value = struct.pack("<I", cursor)
-            pool += payload
-            cursor += len(payload)
-        body += struct.pack("<HHI", tag, fmt, count) + value
-    body += struct.pack("<I", 0)          # no next IFD
-    return body, pool
+# --- EXIF -----------------------------------------------------------------
+#
+# The block is built by raahi_backend.geotag — the same code the app uses to
+# stamp a live camera frame at the shutter. Writing a second EXIF assembler
+# here would mean the demo photographs could pass a reader that real ones
+# fail, or the reverse, and nobody would find out until a demo day.
+try:
+    from raahi_backend import geotag
+except ImportError:                     # run straight out of tools/
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from raahi_backend import geotag
 
 
 def build_exif(lat, lon, taken, heading, focal_35mm=80, make="RAAHI", model="Demo Round"):
-    """Return a TIFF block: IFD0 -> Exif IFD + GPS IFD, little-endian."""
-    make_b = make.encode() + b"\x00"
-    model_b = model.encode() + b"\x00"
-    date_b = taken.strftime("%Y:%m:%d %H:%M:%S").encode() + b"\x00"
-
-    # Sizes are fixed by entry counts, so the offsets can be computed up front.
-    ifd0_entries = 4
-    exif_entries = 3
-    gps_entries = 7
-    ifd0_at = 8
-    ifd0_size = 2 + 12 * ifd0_entries + 4
-    ifd0_data_at = ifd0_at + ifd0_size
-    ifd0_data_size = len(make_b) + len(model_b)
-    exif_at = ifd0_data_at + ifd0_data_size
-    exif_size = 2 + 12 * exif_entries + 4
-    exif_data_at = exif_at + exif_size
-    exif_data_size = len(date_b) + 8            # date + one rational
-    gps_at = exif_data_at + exif_data_size
-    gps_size = 2 + 12 * gps_entries + 4
-    gps_data_at = gps_at + gps_size
-
-    ifd0, ifd0_pool = _build_ifd([
-        (0x010F, ASCII, len(make_b), make_b),
-        (0x0110, ASCII, len(model_b), model_b),
-        (0x8769, LONG, 1, struct.pack("<I", exif_at)),
-        (0x8825, LONG, 1, struct.pack("<I", gps_at)),
-    ], ifd0_at, ifd0_data_at)
-
-    exif_ifd, exif_pool = _build_ifd([
-        (0x9003, ASCII, len(date_b), date_b),
-        (0xA405, SHORT, 1, struct.pack("<H", int(focal_35mm))),
-        (0x920A, RATIONAL, 1, _rational(focal_35mm / 7.5, 100)),
-    ], exif_at, exif_data_at)
-
-    gps_ifd, gps_pool = _build_ifd([
-        (0x0001, ASCII, 2, (b"N" if lat >= 0 else b"S") + b"\x00"),
-        (0x0002, RATIONAL, 3, _dms(lat)),
-        (0x0003, ASCII, 2, (b"E" if lon >= 0 else b"W") + b"\x00"),
-        (0x0004, RATIONAL, 3, _dms(lon)),
-        (0x0010, ASCII, 2, b"T\x00"),
-        (0x0011, RATIONAL, 1, _rational(heading % 360.0, 100)),
-        (0x001F, RATIONAL, 1, _rational(4.5, 10)),      # 4.5 m stated accuracy
-    ], gps_at, gps_data_at)
-
-    return (b"II" + struct.pack("<HI", 42, ifd0_at)
-            + ifd0 + ifd0_pool + exif_ifd + exif_pool + gps_ifd + gps_pool)
+    """A phone's EXIF block for one demo frame."""
+    return geotag.build_exif(
+        lat, lon, taken=taken.replace(tzinfo=timezone.utc), heading=heading,
+        altitude_m=216.0, accuracy_m=4.5, focal_35mm=focal_35mm,
+        pixel_width=900, pixel_height=640, make=make, model=model,
+        software="RAAHI demo writer")
 
 
 # --- PNG writing -----------------------------------------------------------
@@ -144,9 +86,39 @@ def draw_crack(width, height, length_px, seed):
     surface = random.Random(20260101)
     light = random.Random(seed)
     exposure = light.uniform(-14, 14)          # morning sun versus overcast
+
+    # Real tarmac has structure at a scale you can see from standing height:
+    # a patch that took the sun differently, the shadow of a kerb, the seam
+    # of an old repair. It matters here because the scene fingerprint is a
+    # 64-bit difference hash — it compares the average brightness of one
+    # coarse block against its neighbour. Over featureless noise those
+    # averages are all but equal, so a couple of grey levels of exposure
+    # flip bits at random and the app reports "the scene looks different"
+    # about a stretch of road that has not changed. Structure is what makes
+    # the fingerprint repeatable, and a road that had none would be the
+    # unrealistic case, not this.
+    # Small on purpose. A block average over noise wanders by well under a
+    # grey level, so a handful is already enough to hold the fingerprint
+    # steady — while anything approaching the crack's own darkness would
+    # give the detector a second thing to find and measure.
+    waves = random.Random(31337)
+    field = [(waves.uniform(0.6, 2.6), waves.uniform(0.5, 2.2),
+              waves.uniform(0, 6.283), waves.uniform(2.0, 5.0)) for _ in range(5)]
+
     pixels = bytearray(width * height)
-    for i in range(width * height):
-        pixels[i] = max(0, min(255, int(surface.gauss(148, 13) + exposure)))
+    for y in range(height):
+        v = y / float(height)
+        row_base = y * width
+        low = []
+        for x in range(width):
+            u = x / float(width)
+            value = 0.0
+            for fx, fy, phase, amp in field:
+                value += amp * math.sin(6.283 * (fx * u + fy * v) + phase)
+            low.append(value)
+        for x in range(width):
+            pixels[row_base + x] = max(0, min(255, int(
+                surface.gauss(148, 11) + low[x] + exposure)))
 
     # The crack always starts at the same place and grows downward, because a
     # crack that moved between passes would be a different crack.

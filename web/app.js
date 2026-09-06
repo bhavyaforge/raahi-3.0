@@ -495,6 +495,7 @@ function runCapture(img, photo, keepIndex) {
   showOnStage("stage", result.paint(captureIndex));
   const candidate = result.candidates[Math.min(captureIndex, result.candidates.length - 1)];
   $("saveread").disabled = false;
+  $("saveread").textContent = "SAVE THIS READING";
   if (!candidate.plausible) {
     cyclewrap.innerHTML = '<div class="note warn">Nothing in this photo is shaped like a ' +
       "crack — what is outlined is the darkest thing found. Move closer, or open " +
@@ -638,7 +639,7 @@ async function runBatch(files) {
   };
 
   $("pick").disabled = true;
-  let saved = 0, skipped = 0, lastPayload = null;
+  let saved = 0, skipped = 0, lastPayload = null, lastSeen = null;
   for (let i = 0; i < ordered.length; i++) {
     const file = ordered[i];
     const counter = "<b>" + (i + 1) + "/" + ordered.length + "</b> " + esc(file.name) + " — ";
@@ -654,6 +655,7 @@ async function runBatch(files) {
         label: "day " + (dayFromName(file.name) || (i + 1)),
       }));
       lastPayload = payload;
+      lastSeen = { img: img, photo: photo, result: auto.result, threshold: auto.threshold };
       saved++;
       const mm = payload.scale.length_mm;
       say2(counter + esc(payload.site.id) + " · " +
@@ -673,6 +675,28 @@ async function runBatch(files) {
   if (lastPayload) {
     renderPosition(lastPayload);
     UI.siteId = lastPayload.site.id;
+  }
+
+  // Show the last photograph with its crack outlined. Without this the
+  // DETECTION panel sits empty after eighteen files have gone through it,
+  // which reads as if nothing was detected in any of them.
+  if (lastSeen) {
+    captureImage = lastSeen.img;
+    UI.lastPhoto = lastSeen.photo;
+    UI.lastResult = lastSeen.result;
+    captureIndex = 0;
+    const candidate = lastSeen.result.candidates[0];
+    showOnStage("stage", lastSeen.result.paint(0));
+    $("ro").style.display = "block";
+    const length = lastPayload.scale.length_mm;
+    $("mmv").textContent = length == null ? candidate.arcLength.toFixed(0) : length.toFixed(0);
+    $("mmu").textContent = length == null ? "px" : "mm";
+    $("scalenote").textContent = "The last of " + saved + " photographs. Scale: " +
+      (lastPayload.scale.source || "none yet") + ".";
+    // It is already in the record. Saving again would file the same
+    // photograph twice and flatten the last day of the curve.
+    $("saveread").disabled = true;
+    $("saveread").textContent = "ALREADY SAVED";
   }
   say2("<b>Done.</b> " + saved + " saved, " + skipped + " skipped.", saved ? "ok" : "warn");
   await refreshAll();
@@ -1010,19 +1034,38 @@ function drawChart(report) {
     gradient.addColorStop(1, "rgba(224,165,75,0)");
     ctx.fillStyle = gradient; ctx.fill();
 
+    /* Eighteen daily passes will not fit eighteen labels across a card.
+       Work out how many each label needs — its own width plus a gap — and
+       print every nth, always keeping the first and the last so the span
+       of the record is still readable. Overlapping text is worse than
+       fewer labels: it stops being a chart and becomes a smear. */
+    ctx.font = "9px system-ui";
+    const labelWidth = ctx.measureText("day 18").width + 14;
+    const plotWidth = width - padL - padR;
+    const everyN = Math.max(1, Math.ceil(points.length * labelWidth / Math.max(1, plotWidth)));
+    const valueEveryN = points.length > 12 ? 2 : 1;
+
     for (let i = 0; i < cut; i++) {
       const point = points[i];
+      const last = i === points.length - 1;
       ctx.fillStyle = series[i].over_threshold ? "#DC5A46" : "#E0A54B";
       ctx.beginPath(); ctx.arc(point.x, point.y, 5, 0, 6.283); ctx.fill();
       ctx.fillStyle = "#0A0907";
       ctx.beginPath(); ctx.arc(point.x, point.y, 2, 0, 6.283); ctx.fill();
-      ctx.fillStyle = "rgba(242,237,228,0.92)";
-      ctx.font = "bold 11px ui-monospace,monospace";
       ctx.textAlign = "center";
-      ctx.fillText(point.v.toFixed(0), point.x, point.y - 13);
-      ctx.fillStyle = "rgba(167,152,128,0.7)";
-      ctx.font = "9px system-ui";
-      ctx.fillText("day " + series[i].day.toFixed(0), point.x, height - padB + 16);
+      if (i === 0 || last || i % valueEveryN === 0) {
+        ctx.fillStyle = "rgba(242,237,228,0.92)";
+        ctx.font = "bold 11px ui-monospace,monospace";
+        ctx.fillText(point.v.toFixed(0), point.x, point.y - 13);
+      }
+      // The last label is always drawn, so suppress any strided one close
+      // enough to collide with it — "day 16day 17" is not a label.
+      const nearLast = !last && (points.length - 1 - i) < everyN;
+      if (i === 0 || last || (i % everyN === 0 && !nearLast)) {
+        ctx.fillStyle = "rgba(167,152,128,0.7)";
+        ctx.font = "9px system-ui";
+        ctx.fillText("day " + series[i].day.toFixed(0), point.x, height - padB + 16);
+      }
       ctx.textAlign = "left";
     }
     if (progress < 1) requestAnimationFrame(step);
