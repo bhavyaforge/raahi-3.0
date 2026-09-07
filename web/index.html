@@ -89,12 +89,7 @@
 
   <div class="grid g2">
     <div class="card">
-      <div class="seg" id="src" role="group" aria-label="Photo source">
-        <button class="on" data-m="file" aria-pressed="true">Upload photo</button>
-        <button data-m="cam" aria-pressed="false">Capture photo</button>
-      </div>
-
-      <div id="pickwrap" style="margin-top:16px">
+      <div id="pickwrap">
         <button class="btn g" id="pick">CHOOSE PHOTOS</button>
         <p class="tiny" style="margin-top:10px">
           A photo straight off a phone carries its own GPS. That is what lets the app
@@ -106,7 +101,6 @@
           already a growth rate; more days make the date it predicts firmer.
         </p>
       </div>
-      <div id="camwrap" style="margin-top:16px"></div>
       <div id="batch"></div>
       <input type="file" id="file" accept="image/*" multiple style="display:none"
              aria-label="Choose photos">
@@ -164,6 +158,17 @@
         <div id="gpsbox"><div class="ph">Position is read from the photo when you save it.</div></div>
       </div>
     </div>
+  </div>
+
+  <div class="card" style="margin-top:18px">
+    <div class="galhead">
+      <h3 style="margin:0">PHOTOGRAPHS IN THE RECORD <span id="galcount"></span></h3>
+      <button class="btn ghost sm" id="galclear">REMOVE ALL</button>
+    </div>
+    <p class="tiny">Hover a photograph to remove it. Removing one takes its reading
+       out of the growth curve straight away — the rate, the date and the seal list
+       are all recalculated from what is left.</p>
+    <div id="gallery"></div>
   </div>
 </section>
 
@@ -317,14 +322,9 @@
       <h3>CALIBRATION — TEACH IT HOW BIG A PIXEL IS</h3>
       <p class="mut">Photograph a <b>straight</b> line whose length you have measured with a
         ruler. Everything measured afterwards inherits this number.</p>
-      <div class="seg" id="src1" role="group" aria-label="Calibration photo source">
-        <button class="on" data-m="file" aria-pressed="true">Upload photo</button>
-        <button data-m="cam" aria-pressed="false">Capture photo</button>
-      </div>
-      <div id="pickwrap1" style="margin-top:16px">
+      <div id="pickwrap1">
         <button class="btn ghost" id="pick1">CHOOSE A PHOTO</button>
       </div>
-      <div id="camwrap1" style="margin-top:16px"></div>
       <input type="file" id="file1" accept="image/*" style="display:none" aria-label="Calibration photo">
 
       <label class="f" for="t1">DARKNESS THRESHOLD <span id="t1v" style="color:var(--amber)">110</span></label>

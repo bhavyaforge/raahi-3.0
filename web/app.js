@@ -17,7 +17,7 @@ const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g,
 const UI = {
   siteId: null,          // spot currently shown on the GROWTH tab
   reportId: null,        // spot currently shown on the REPORT tab
-  autoShutter: false,    // did the shutter press itself for the photo on screen
+  observations: 0,       // how many photographs are in the record
   roadClasses: [],       // the traffic table, fetched once
   sites: [],
   threshold: 150,
@@ -254,155 +254,7 @@ function lumaGrid(imgEl, size) {
   return grid;
 }
 
-/* ==================== CAMERA & FILES ==================== */
-let mediaStream = null, cameraHost = null, cameraWatchStop = null;
-
-function stopCamera() {
-  if (cameraWatchStop) { cameraWatchStop(); cameraWatchStop = null; }
-  if (mediaStream) { mediaStream.getTracks().forEach((t) => t.stop()); mediaStream = null; }
-  if (cameraHost) {
-    const host = $(cameraHost);
-    if (host) host.innerHTML = "";
-    cameraHost = null;
-  }
-}
-
-function startCamera(hostId, onFrame) {
-  if (cameraHost === hostId && mediaStream) return;
-  stopCamera();
-  const host = $(hostId);
-  if (!host) return;
-  cameraHost = hostId;
-
-  if (!window.isSecureContext) {
-    host.innerHTML = '<div class="note warn"><b>The camera needs the local server.</b><br>' +
-      'Run <span class="mono">python3 server.py</span> and open ' +
-      '<b>http://localhost:8000</b>. Uploading a photo works either way — and an ' +
-      'uploaded phone photo carries GPS, which a webcam frame does not.</div>';
-    return;
-  }
-
-  host.innerHTML = '<video autoplay playsinline muted style="width:100%;border-radius:10px;' +
-    'border:1px solid var(--edge)"></video>' +
-    '<label class="shutterrow"><input type="checkbox" id="autoshutter" checked>' +
-    "<span>Fire the shutter when it sees a crack</span></label>" +
-    '<div class="shutterstate" id="shutterstate">Camera starting…</div>' +
-    '<button class="btn g" style="margin-top:12px">TAKE THE PHOTO</button>';
-  const video = host.querySelector("video");
-  const button = host.querySelector("button");
-  const state = $("shutterstate");
-
-  navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1600 } } })
-    .then((stream) => { mediaStream = stream; video.srcObject = stream; watch(); })
-    .catch(() => {
-      host.innerHTML = '<div class="note bad">The camera is blocked. Allow it in the browser, ' +
-        "or upload a photo instead.</div>";
-    });
-
-  /* Take the frame that is on screen right now, at full resolution. */
-  function fire(auto) {
-    if (!video.videoWidth) return;
-    const canvas = document.createElement("canvas");
-    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-    canvas.getContext("2d").drawImage(video, 0, 0);
-    const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
-    const img = new Image();
-    img.onload = () => onFrame(img, {
-      b64: dataUrl,
-      filename: (auto ? "autoshutter" : "capture") + "-" + Date.now() + ".jpg",
-      live: true, auto: !!auto,
-    });
-    img.src = dataUrl;
-  }
-
-  button.addEventListener("click", () => fire(false));
-
-  /* ---- the shutter that presses itself --------------------------------
-     A driver on a collection round has both hands on the wheel, so nobody
-     is going to press anything. The camera watches its own preview and
-     fires when a crack is in front of it.
-
-     Two rules keep it from firing at every dark patch on the road:
-
-       * the frame has to hold something crack-shaped — the same test the
-         still detector uses: thin, long, not filling the picture, and
-         clearly darker than the tarmac around it;
-       * it has to be there in three frames running. A shadow crossing the
-         lens, a wet patch, a passing wheel: all gone by the next frame.
-
-     Frames are checked small and slow — a little over half the working
-     width, once a second — because this runs on a phone with the screen off
-     and the live pass only has to decide whether the picture is worth
-     keeping. The full-resolution frame is what actually gets measured.
-
-     Not smaller than that, though: a crack is two or three pixels wide in
-     the photograph, and below about 400 px across it thins out until the
-     connected-component step finds nothing at all. A watcher that never
-     fires is worse than no watcher. */
-  const WATCH_WIDTH = 420;
-  let stableFor = 0, armed = true, timer = null;
-
-  function watch() {
-    clearInterval(timer);
-    timer = setInterval(look, 900);
-    if (state) state.textContent = "Watching the road…";
-  }
-
-  function look() {
-    if (!mediaStream || !video.videoWidth) return;
-    const auto = $("autoshutter");
-    if (!auto || !auto.checked) {
-      stableFor = 0;
-      if (state) state.textContent = "Automatic shutter off — press the button yourself.";
-      return;
-    }
-    if (!armed) return;
-
-    // Road lighting is nothing like a fixed number — wet tarmac, low sun,
-    // the shadow of the truck itself. So sweep a few cuts and keep the one
-    // with the most contrast, which is the cheap version of what the still
-    // detector does with the full sweep.
-    let top = null, merit = 0;
-    for (const cut of [95, 120, 145]) {
-      const found = analyseImage(video, cut, WATCH_WIDTH);
-      if (found.err || !found.candidates.length) continue;
-      const candidate = found.candidates[0];
-      if (!candidate.plausible) continue;
-      const value = candidate.contrast *
-                    (candidate.span / Math.hypot(found.width, found.height));
-      if (value > merit) { top = candidate; merit = value; }
-    }
-    const good = top && top.contrast > 0.055;
-
-    if (!good) {
-      stableFor = 0;
-      if (state) state.textContent = "Watching the road — nothing crack-shaped yet.";
-      return;
-    }
-
-    stableFor++;
-    if (stableFor < 3) {
-      if (state) {
-        state.textContent = "Crack in frame — holding for a steady view (" +
-          stableFor + " of 3).";
-      }
-      return;
-    }
-
-    stableFor = 0;
-    armed = false;
-    if (state) state.textContent = "SHUTTER — photograph taken and being measured.";
-    fire(true);
-    // Long enough not to photograph the same metre of road forty times while
-    // the truck sits at a junction.
-    setTimeout(() => {
-      armed = true;
-      if (state && mediaStream) state.textContent = "Watching the road…";
-    }, 6000);
-  }
-
-  cameraWatchStop = () => clearInterval(timer);
-}
+/* ==================== FILES ==================== */
 
 function readPhoto(file) {
   return new Promise((resolve, reject) => {
@@ -467,7 +319,6 @@ let captureIndex = 0, captureThreshold = null, captureImage = null;
 function runCapture(img, photo, keepIndex) {
   captureImage = img;
   if (photo) UI.lastPhoto = photo;
-  if (photo) UI.autoShutter = !!photo.auto;
   if (!keepIndex) captureIndex = 0;
 
   let result;
@@ -550,7 +401,6 @@ function readingPayload(img, photo, result, index, extra) {
     distance_mm: isFinite(distanceCm) && distanceCm > 0 ? distanceCm * 10 : null,
     day_index: isFinite(dayField) && dayField > 0 ? dayField : named,
     new_spot: !!($("newspot") && $("newspot").checked),
-    auto_shutter: !!(photo && photo.auto),
     captured_at: new Date().toISOString(),
   }, extra || {});
 }
@@ -602,6 +452,7 @@ async function saveReading() {
     $("rname").value = "";
     if ($("newspot")) $("newspot").checked = false;
     await refreshAll();
+    await renderGallery();
     UI.siteId = site.id;
     renderGrowth();
   } catch (error) {
@@ -723,6 +574,7 @@ async function runBatch(files) {
   }
   say2("<b>Done.</b> " + saved + " saved, " + skipped + " skipped.", saved ? "ok" : "warn");
   await refreshAll();
+  await renderGallery();
   renderGrowth();
   if (lastPayload) {
     say("msg", "<b>" + saved + " photographs saved.</b> Open <b>GROWTH</b> for the curve, " +
@@ -796,6 +648,80 @@ function renderSiteChooser() {
     '<select id="siteselect"><option value="">Work it out from the photo</option>' +
     UI.sites.map((s) => '<option value="' + esc(s.id) + '">' + esc(s.name) +
                         " (" + s.observations + " photos)</option>").join("") + "</select>";
+}
+
+/* ==================== THE GALLERY ====================
+   Every photograph in the record, with a way to take one back out.
+
+   Fifty-four photographs go in over a few minutes and one of them is a
+   mis-fire — a blurred frame, the wrong crack, a duplicate. Without a way
+   to see and remove it, the only remedy is to clear everything and upload
+   all fifty-four again. So: a thumbnail grid, a cross on each, and one
+   button that empties the lot.
+
+   Removing a reading recalculates the rate, the date and the seal list from
+   what is left, which is the honest behaviour — a growth curve that kept a
+   reading the user had rejected would be a curve nobody could defend.      */
+async function renderGallery() {
+  const host = $("gallery"), count = $("galcount");
+  if (!host) return;
+
+  let data;
+  try {
+    data = await api("/observations");
+  } catch (error) {
+    host.innerHTML = '<div class="note bad">' + esc(error.message) + "</div>";
+    return;
+  }
+
+  UI.observations = data.count;
+  if (count) {
+    count.textContent = data.count
+      ? "· " + data.count + " photo" + (data.count === 1 ? "" : "s") +
+        " across " + data.sites + " spot" + (data.sites === 1 ? "" : "s")
+      : "";
+  }
+  $("galclear").style.display = data.count ? "" : "none";
+
+  if (!data.count) {
+    host.innerHTML = '<div class="empty">Nothing uploaded yet. Photographs appear here ' +
+      "as you add them, and each one can be removed on its own.</div>";
+    return;
+  }
+
+  host.innerHTML = '<div class="gal">' + data.observations.map((o) => {
+    const measure = o.length_mm == null
+      ? Math.round(o.arc_px) + " px"
+      : o.length_mm.toFixed(1) + " mm";
+    return '<figure class="galitem">' +
+      (o.photo_sha
+        ? '<img src="/photo/' + esc(o.photo_sha) + '" alt="' +
+          esc(o.photo_name || ("pass " + o.pass_number)) + '" loading="lazy">'
+        : '<div class="nophoto">no image<br>stored</div>') +
+      '<button class="galx" data-drop="' + o.id + '" ' +
+        'title="Remove this photograph" aria-label="Remove ' +
+        esc(o.photo_name || ("pass " + o.pass_number)) + '">&times;</button>' +
+      '<figcaption><b>' + (o.day == null ? "pass " + o.pass_number : "day " + o.day) +
+      "</b><span>" + esc(measure) + "</span>" +
+      '<em>' + esc(o.site_id) + " · " + esc(shortDate(o.captured_at)) + "</em></figcaption>" +
+      "</figure>";
+  }).join("") + "</div>";
+
+  host.querySelectorAll("[data-drop]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      button.disabled = true;
+      try {
+        await del("/observations/" + button.dataset.drop);
+        await refreshAll();
+        await renderGallery();
+        renderGrowth();
+        toast("Photograph removed. The growth figures are recalculated.", "ok");
+      } catch (error) {
+        button.disabled = false;
+        toast(error.message);
+      }
+    });
+  });
 }
 
 /* ==================== SPOTS TAB ==================== */
@@ -1544,9 +1470,8 @@ function switchTab(target) {
   if (!page) return;
   page.classList.add("on");
 
-  if (pageId !== "p1" && pageId !== "p6") stopCamera();
   if (window.RoadHero) window.RoadHero.sync();
-  if (pageId === "p1") askDevicePosition();
+  if (pageId === "p1") { askDevicePosition(); renderGallery(); }
   if (pageId === "p2") renderSites();
   if (pageId === "p3") renderGrowth();
   if (pageId === "p4") renderSchedule();
@@ -1608,6 +1533,7 @@ async function refreshAll() {
     }
     if ($("p2").classList.contains("on")) renderSites();
     if ($("p7").classList.contains("on")) renderReport();
+  if ($("p1").classList.contains("on")) renderGallery();
   } catch (error) {
     $("cal").innerHTML = '<span class="dot" style="background:var(--red)"></span>BACKEND OFFLINE';
     toast("Cannot reach the backend. Is python3 server.py still running?");
@@ -1621,23 +1547,6 @@ $("startround").addEventListener("click", () => {
 });
 
 // Capture tab
-document.querySelectorAll("#src button").forEach((button) => {
-  button.addEventListener("click", () => {
-    document.querySelectorAll("#src button").forEach((b) => {
-      b.classList.remove("on"); b.setAttribute("aria-pressed", "false");
-    });
-    button.classList.add("on");
-    button.setAttribute("aria-pressed", "true");
-    if (button.dataset.m === "cam") {
-      $("pickwrap").style.display = "none";
-      askDevicePosition();
-      startCamera("camwrap", (img, photo) => runCapture(img, photo));
-    } else {
-      stopCamera();
-      $("pickwrap").style.display = "block";
-    }
-  });
-});
 $("pick").addEventListener("click", () => $("file").click());
 $("file").addEventListener("change", () => {
   const files = [...$("file").files];
@@ -1676,22 +1585,6 @@ $("th").addEventListener("input", () => {
 });
 
 // Training tab
-document.querySelectorAll("#src1 button").forEach((button) => {
-  button.addEventListener("click", () => {
-    document.querySelectorAll("#src1 button").forEach((b) => {
-      b.classList.remove("on"); b.setAttribute("aria-pressed", "false");
-    });
-    button.classList.add("on");
-    button.setAttribute("aria-pressed", "true");
-    if (button.dataset.m === "cam") {
-      $("pickwrap1").style.display = "none";
-      startCamera("camwrap1", (img) => runCalibration(img));
-    } else {
-      stopCamera();
-      $("pickwrap1").style.display = "block";
-    }
-  });
-});
 $("pick1").addEventListener("click", () => $("file1").click());
 onFileChosen($("file1"), (img) => runCalibration(img));
 $("t1").addEventListener("input", () => {
@@ -1743,7 +1636,22 @@ $("runeval").addEventListener("click", async () => {
 });
 
 // Training visibility: a link in the footer, or ?training=1 in the address bar.
-// Start over
+// Remove every photograph, from the capture tab
+$("galclear").addEventListener("click", async () => {
+  if (!confirm("Remove all " + UI.observations + " photographs?\n\nEvery spot and "
+             + "reading goes with them. This cannot be undone; your calibration is kept."))
+    return;
+  try {
+    const out = await del("/records");
+    UI.siteId = null; UI.reportId = null;
+    await refreshAll();
+    await renderGallery();
+    renderGrowth();
+    toast(out.observations_removed + " readings removed. The round starts fresh.", "ok");
+  } catch (error) { toast(error.message); }
+});
+
+// Start over, from the spots tab
 $("clearall").addEventListener("click", async () => {
   if (!confirm("Clear every spot, reading and photograph?\n\nThis cannot be undone. "
              + "Your calibration and seal threshold are kept.")) return;
@@ -1751,6 +1659,7 @@ $("clearall").addEventListener("click", async () => {
     const out = await del("/records");
     UI.siteId = null; UI.reportId = null;
     await refreshAll();
+    await renderGallery();
     renderSites();
     toast(out.observations_removed + " readings cleared. The round starts fresh.", "ok");
   } catch (error) { toast(error.message); }

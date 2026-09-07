@@ -119,8 +119,8 @@ match is tighter than today's.
 
 ### 2 · How many millimetres is that?
 
-Nobody photographing a road should be asked to calibrate anything. There are two
-buttons: *Upload photo* and *Capture photo*.
+Nobody photographing a road should be asked to calibrate anything. There is one
+button: *Choose photos*.
 
 Millimetres are worked out on the server, from the best source available, and
 every reading says which one was used:
@@ -231,16 +231,17 @@ explains each one in full, with every number named.
 | **05 Report** | One crack end to end: detect, track, predict, schedule, verify |
 | **06 Detection quality** | Deliberately empty, and it explains why |
 
-### Two things worth demonstrating live
+### Worth demonstrating live
 
-**The shutter presses itself.** In camera mode the app watches its own preview
-and fires when something crack-shaped holds still for three consecutive frames —
-three, because a shadow or a passing wheel is gone by the next one. A driver on a
-collection round has both hands on the wheel; nobody is going to press anything.
+**Upload the whole folder at once.** Two photographs, eighteen, fifty-four — they
+go in as a batch, in order, with a line each saying what happened and why it was
+matched to the spot it was. Everything in the record then appears as a grid of
+thumbnails on the same tab; any one can be removed, and the growth rate, the
+date and the seal list recalculate from what is left.
 
 **The photograph carries its own coordinates.** A webcam frame has no metadata,
-so at the moment of capture RAAHI writes the position, heading, altitude, UTC
-satellite clock and accuracy into the file's own EXIF, exactly as a phone does.
+so RAAHI writes the position, heading, altitude, UTC satellite clock and accuracy
+into the file's own EXIF as it stores the photograph, exactly as a phone does.
 Copy the file anywhere, open it in any EXIF viewer, and the coordinates are
 there — the record and the pixels cannot drift apart. A photograph that arrived
 with its own GPS is never rewritten.
@@ -257,7 +258,7 @@ server.py                the same app, from the source tree
 
 raahi_backend/
   exif.py                read GPS, heading and lens data from JPEG, PNG, HEIC
-  geotag.py              write GPS into JPEG and PNG, at the shutter
+  geotag.py              write GPS into JPEG and PNG when the file carries none
   geo.py                 distance, heading, scene hash, the revisit decision
   growth.py              least-squares rate, lead time, verdicts
   rainfall.py            monthly normals by nearest station, or a real forecast
@@ -286,7 +287,9 @@ source, not only in this file.
 | `GET` | `/api/risk` | the formula's working, its terms, its stated assumptions |
 | `GET` | `/api/report/<id>` | one crack: detect, track, predict, schedule, verify |
 | `GET` | `/api/rainfall?lat=&lon=` | expected rain, and where the figure came from |
+| `GET` | `/api/observations` | every photograph in the record, for the gallery |
 | `POST` | `/api/observations` | a photo plus what the browser measured in it |
+| `DELETE` | `/api/observations/<id>` · `/api/records` | remove one photograph, or all of them |
 | `POST` | `/api/sites/<id>/context` | road class, vehicle count, ward |
 | `POST` | `/api/rainfall` | a real forecast, or a CSV of real normals |
 

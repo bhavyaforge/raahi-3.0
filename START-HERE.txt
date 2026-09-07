@@ -76,19 +76,17 @@ day, the lead time comes out around 28 days, and the seal list ranks it by
 with every term and where it came from printed beside the answer.
 
 
-THE SHUTTER PRESSES ITSELF
---------------------------
+REMOVING A PHOTOGRAPH, AND STARTING OVER
+----------------------------------------
 
-Press "Capture photo" and the camera watches its own preview. When
-something crack-shaped holds still in front of it for three frames, it
-takes the photograph by itself — nobody has to press anything, which is
-the point when the camera is bolted inside a truck.
+Under the upload button, every photograph in the record appears as a
+thumbnail with its day number and its measurement. Hover one and a small
+cross appears in the corner: click it and that reading comes out of the
+growth curve. The rate, the date and the seal list are recalculated from
+what is left.
 
-A webcam frame has no GPS of its own, so the app writes one in: the
-position, the heading, the accuracy and the time go into the file's own
-hidden EXIF at the moment of capture, exactly the way a phone does it.
-Open one of the files in data/photos afterwards in any EXIF viewer and
-the coordinates are there.
+"REMOVE ALL" next to that heading empties the whole round. Your
+calibration and the seal threshold are kept.
 
 
 IF SOMETHING LOOKS WRONG
@@ -98,8 +96,8 @@ Front page showing big percentages, or a headline across the road image?
 You are looking at an older copy. The front page should be a wordless
 sunrise over a road, with the writing below it.
 
-Camera button does nothing? The camera needs the server — it will not
-work if you double-click index.html. Uploading a photo always works, and
-an uploaded phone photo carries GPS, which a webcam frame does not.
+Nothing happens when you choose photos? The app needs the server — it
+will not work if you double-click index.html. Run "python3 raahi.py"
+and use the address it prints.
 
 Nothing to install. Python 3 only. Nothing leaves your machine.

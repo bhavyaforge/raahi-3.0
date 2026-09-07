@@ -153,6 +153,8 @@ class Handler(BaseHTTPRequestHandler):
             return API.get_sites()
         if len(rest) == 2 and rest[0] == "sites":
             return API.get_site(rest[1])
+        if rest == ["observations"]:
+            return API.get_observations()
         if rest == ["schedule"]:
             return API.get_schedule()
         if rest == ["trials"]:

@@ -21,7 +21,7 @@ Taken from a live browser against a real server, on the eighteen-day demo round.
 | `00-overview.jpg` | What the build does, and the four limits it states up front |
 | `01-capture-batch.jpg` | Eighteen photographs uploading in order, with the GPS panel filled in |
 | `01-gps-from-a-phone.jpg` | A phone photograph's own EXIF, read out in full |
-| `01-automatic-shutter.jpg` | The camera firing by itself when a crack holds in frame |
+| `01-gallery.jpg` | Every photograph in the record, each removable on its own |
 | `03-growth.jpg` | The seal light, and day 1 against day 18 |
 | `03-growth-curve.jpg` | Eighteen readings climbing toward the 150 mm threshold |
 | `03-signal-seal-it.jpg` | Red — crossing the threshold, with the date |

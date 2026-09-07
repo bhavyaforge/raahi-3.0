@@ -175,6 +175,41 @@ class Api:
         return risk.assess(summary, summary["growth"],
                            rain_override_mm=summary.get("rain_mm_override"))
 
+    def get_observations(self):
+        """
+        Every photograph in the record, newest spot first, as a flat list.
+
+        The gallery on the capture tab needs one call it can render and, more
+        to the point, one call it can re-render after a deletion. Walking
+        /api/sites and then /api/sites/<id> for each would work and would
+        cost a request per spot to show a grid of thumbnails.
+        """
+        rows = []
+        for site in self.store.list_sites():
+            obs = self.store.observations_for(site["id"])
+            first = _parse_time(obs[0]["captured_at"]) if obs else None
+            for index, row in enumerate(obs, 1):
+                stamp = _parse_time(row["captured_at"])
+                rows.append({
+                    "id": row["id"],
+                    "site_id": site["id"],
+                    "site_name": site["name"],
+                    "pass_number": index,
+                    "day": row["day_index"] or (
+                        round((stamp - first).total_seconds() / 86400.0) + 1
+                        if (stamp and first) else None),
+                    "captured_at": row["captured_at"],
+                    "length_mm": row["length_mm"],
+                    "arc_px": row["arc_px"],
+                    "photo_sha": row["photo_sha"],
+                    "photo_name": row["photo_name"],
+                    "lat": row["lat"], "lon": row["lon"],
+                    "gps_source": row["gps_source"],
+                    "label": row["label"],
+                })
+        return 200, {"observations": rows, "count": len(rows),
+                     "sites": len(self.store.list_sites())}
+
     def get_schedule(self):
         """
         The ranked seal list — the deck's fourth box, built from real readings.
