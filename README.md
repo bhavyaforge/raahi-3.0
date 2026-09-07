@@ -225,13 +225,21 @@ ready — there is the [technical defence](docs/defence/RAAHI-Technical-Defence.
 
 | tab | what it is for |
 | --- | --- |
-| **00 Overview** | What the build does, and the limits it states up front |
-| **01 Capture** | Upload or photograph; detection, measurement, position, spot match |
+| **00 Overview** | The street at dawn, then what the build does and the limits it states up front |
+| **01 Capture** | Upload one photograph or a whole round; detection, measurement, position, spot match |
 | **02 Spots** | Every place photographed, and where to clear the round |
 | **03 Growth** | The seal light, baseline against latest, the curve, the lead time |
 | **04 Seal list** | Ranked by growth × rain × traffic, every term shown |
 | **05 Report** | One crack end to end: detect, track, predict, schedule, verify |
 | **06 Detection quality** | Deliberately empty, and it explains why |
+
+The overview opens on a street at first light, with cracks that arrive out of
+the distance, open, and pass under the camera. It is not a video and not a
+stock photograph: the whole scene — sky, buildings, trees, lamps, tarmac and
+every crack in it — is about two thousand lines of canvas drawing in
+`web/hero.js`, generated from a fixed seed so it is the same street every
+time. It is there because it is the view from the windscreen of the vehicle
+this is meant to run on.
 
 ### Worth demonstrating live
 

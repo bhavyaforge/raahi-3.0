@@ -309,8 +309,8 @@ select:focus{border-color:var(--amber)}
 /* Only enough shading at the very bottom to let the image settle into the
    page. The top stays clean — the sky is the best part. */
 .roadhero .shade{position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(180deg,rgba(8,7,10,.34) 0%,rgba(8,7,10,0) 16%,
-    rgba(8,7,10,0) 84%,rgba(10,9,7,.55) 96%,rgba(10,9,7,.92) 100%)}
+  background:linear-gradient(180deg,rgba(8,7,10,.30) 0%,rgba(8,7,10,0) 15%,
+    rgba(8,7,10,0) 86%,rgba(10,9,7,.38) 97%,rgba(10,9,7,.80) 100%)}
 
 /* The heading, the standfirst and the way in — below the image, not on it. */
 .introrow{display:flex;align-items:flex-end;justify-content:space-between;

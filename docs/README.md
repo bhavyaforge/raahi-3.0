@@ -20,6 +20,7 @@ Taken from a live browser against a real server, on the eighteen-day demo round.
 | file | what it shows |
 | --- | --- |
 | `00-overview.jpg` | What the build does, and the four limits it states up front |
+| `00-street.jpg` | The opening frame: a city street at dawn, drawn in code, with cracks that open and run past |
 | `01-capture-batch.jpg` | Eighteen photographs uploading in order, with the GPS panel filled in |
 | `01-gps-from-a-phone.jpg` | A phone photograph's own EXIF, read out in full |
 | `01-gallery.jpg` | Every photograph in the record, each removable on its own |
