@@ -18,6 +18,26 @@ The browser opens at <http://localhost:8000>. Stop it with `Control + C`.
 
 ---
 
+## What it looks like
+
+![The seal light and day 1 against day 18](docs/screenshots/03-growth.jpg)
+
+One crack, photographed eighteen mornings. Day one on the left, day eighteen on
+the right, the growth between them, and above it the one verdict a ward engineer
+actually reads.
+
+![The ranked seal list](docs/screenshots/04-seal-list.jpg)
+
+The seal list, ordered by `growth × rainfall × traffic`, with every term and the
+figure behind it printed in the row.
+
+![The formula worked out](docs/screenshots/05-report-the-formula.jpg)
+
+More screens, the full sixteen-page walkthrough, and a complete sample run —
+input photographs and output JSON — are in **[`docs/`](docs/)**.
+
+---
+
 ## What is new in this build
 
 ### 1. GPS out of the photograph itself
@@ -363,6 +383,14 @@ raahi/
 │   ├── index.html
 │   ├── styles.css
 │   └── app.js                 crack detection in the browser
+├── docs/
+│   ├── screenshots/           the app running, one image per screen
+│   ├── sample-run/            one crack, 18 photographs — input and output
+│   └── walkthrough/           the presentation guide, PDF and web page
+├── docs/
+│   ├── screenshots/           the app running, one image per screen
+│   ├── sample-run/            one crack, 18 photographs — input and output
+│   └── walkthrough/           the presentation guide, PDF and web page
 ├── tools/
 │   ├── eval_map.py            score a detector from the command line
 │   ├── make_demo_photos.py    eighteen days of geotagged demo photographs

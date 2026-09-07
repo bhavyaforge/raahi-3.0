@@ -1,0 +1,1028 @@
+{
+    "site": {
+        "id": "SITE-001",
+        "name": "Spot 1 \u00b7 28.61397, 77.20906",
+        "lat": 28.61394125,
+        "lon": 77.20903412,
+        "direction_deg": 92.33,
+        "road_name": null,
+        "ward": null,
+        "road_class": "residential_lane",
+        "road_class_label": "Residential lane",
+        "threshold_mm": 150.0,
+        "position_text": "28.613941 N, 77.209034 E",
+        "position_dms": "28\u00b0 36' 50.19\" N  77\u00b0 12' 32.52\" E",
+        "map_url": "https://www.openstreetmap.org/?mlat=28.613941&mlon=77.209034#map=19/28.613941/77.209034"
+    },
+    "detect": {
+        "passes": 18,
+        "measured": 18,
+        "auto_shutter": 0,
+        "note": "Every pass here is a photograph that was taken, measured and stored. Nothing on this page is simulated."
+    },
+    "track": {
+        "days_covered": 17.01,
+        "with_position": 18,
+        "position_from_camera": 18,
+        "position_written_by_us": 0,
+        "radius_m": 15.0,
+        "heading_tolerance_deg": 45.0,
+        "note": "A photo is the same spot when position and heading agree, or when the scene itself is unmistakable. Every match below says which of those decided it."
+    },
+    "predict": {
+        "readings": 18,
+        "threshold_mm": 150.0,
+        "baseline": {
+            "observation_id": 1,
+            "at": "2026-08-21T06:52:00+00:00",
+            "length_mm": 110.1,
+            "photo_sha": "4a5ad80eb77e420c43385da083ec7642d5f60cf141f94249bc691d0259cd63d9",
+            "label": "day 1"
+        },
+        "latest": {
+            "observation_id": 18,
+            "at": "2026-09-07T07:08:00+00:00",
+            "length_mm": 134.3,
+            "photo_sha": "1016a44be397104ff3ee46fc2dea4136d269e8dc9fc66abc462f75633c2cbdea",
+            "label": "day 18"
+        },
+        "observed_days": 17.01,
+        "total_growth_mm": 24.2,
+        "mm_per_day": 1.392,
+        "mm_per_week": 9.74,
+        "fit_r2": 0.974,
+        "predicted_cross_date": "2026-09-18T13:49:52.894232+00:00",
+        "lead_time_days": 28.3,
+        "days_remaining": 10.9,
+        "verdict": "SEAL SOON",
+        "headline": "Crosses 150 mm in about 11 days.",
+        "detail": "Growing 1.39 mm a day (fit R-squared 0.97 over 18 readings). Lead time from first sighting: 28 days.",
+        "series": [
+            {
+                "observation_id": 1,
+                "at": "2026-08-21T06:52:00+00:00",
+                "day": 0.0,
+                "length_mm": 110.1,
+                "photo_sha": "4a5ad80eb77e420c43385da083ec7642d5f60cf141f94249bc691d0259cd63d9",
+                "label": "day 1",
+                "over_threshold": false
+            },
+            {
+                "observation_id": 2,
+                "at": "2026-08-22T06:54:00+00:00",
+                "day": 1.001,
+                "length_mm": 111.9,
+                "photo_sha": "18150d1a33327feb0c0074523516b94ccb0da279c71824bbc7818044ff735bd5",
+                "label": "day 2",
+                "over_threshold": false
+            },
+            {
+                "observation_id": 3,
+                "at": "2026-08-23T06:37:00+00:00",
+                "day": 1.99,
+                "length_mm": 112.3,
+                "photo_sha": "02c6f4034942038972024b9ea63261211f6d1e844b4bd4b0ff1721acb286e5da",
+                "label": "day 3",
+                "over_threshold": false
+            },
+            {
+                "observation_id": 4,
+                "at": "2026-08-24T07:16:00+00:00",
+                "day": 3.017,
+                "length_mm": 115.1,
+                "photo_sha": "99b20227c011a85e3ea5d39f4917aba5a0b62c0debfc3a1ca8334c34304e88f6",
+                "label": "day 4",
+                "over_threshold": false
+            },
+            {
+                "observation_id": 5,
+                "at": "2026-08-25T07:06:00+00:00",
+                "day": 4.01,
+                "length_mm": 117.9,
+                "photo_sha": "08a0af97940e894e5dc89809e95e7fbce48f280af894c2a115e86fcbf09aa030",
+                "label": "day 5",
+                "over_threshold": false
+            },
+            {
+                "observation_id": 6,
+                "at": "2026-08-26T06:38:00+00:00",
+                "day": 4.99,
+                "length_mm": 120.4,
+                "photo_sha": "8afa443bd347ef7cbad4b695d9117137c1ce94cd1596a80d637ae27b200fbc54",
+                "label": "day 6",
+                "over_threshold": false
+            },
+            {
+                "observation_id": 7,
+                "at": "2026-08-27T06:43:00+00:00",
+                "day": 5.994,
+                "length_mm": 117.6,
+                "photo_sha": "0bc84198599424d6db556cf16051863cf23558e573698ac8bbe580348d4d5ece",
+                "label": "day 7",
+                "over_threshold": false
+            },
+            {
+                "observation_id": 8,
+                "at": "2026-08-28T07:04:00+00:00",
+                "day": 7.008,
+                "length_mm": 119.7,
+                "photo_sha": "1300c74107e9a285cfef8d90dbaab312246c1ae8a15f787fd98ba6667964e4c2",
+                "label": "day 8",
+                "over_threshold": false
+            },
+            {
+                "observation_id": 9,
+                "at": "2026-08-29T07:02:00+00:00",
+                "day": 8.007,
+                "length_mm": 121.5,
+                "photo_sha": "da20a49d0ed7eee6e20e86f81fe892ae397fa836dff53e23ff8069068551bb2e",
+                "label": "day 9",
+                "over_threshold": false
+            },
+            {
+                "observation_id": 10,
+                "at": "2026-08-30T06:57:00+00:00",
+                "day": 9.003,
+                "length_mm": 125.4,
+                "photo_sha": "27c00258c4188e81d98a87346fc339d83c82fe208e5b9b58ebbe393e8bde6f43",
+                "label": "day 10",
+                "over_threshold": false
+            },
+            {
+                "observation_id": 11,
+                "at": "2026-08-31T06:58:00+00:00",
+                "day": 10.004,
+                "length_mm": 126.8,
+                "photo_sha": "3fbb143cb3c146ee6a5e304baf9100e50ddc8270a6cb7981366665119669ea08",
+                "label": "day 11",
+                "over_threshold": false
+            },
+            {
+                "observation_id": 12,
+                "at": "2026-09-01T07:03:00+00:00",
+                "day": 11.008,
+                "length_mm": 126.1,
+                "photo_sha": "8a32662f173fe788bc70c3244fd1e916eaff69426a968fb8202a1b44c607bda3",
+                "label": "day 12",
+                "over_threshold": false
+            },
+            {
+                "observation_id": 13,
+                "at": "2026-09-02T07:11:00+00:00",
+                "day": 12.013,
+                "length_mm": 127.2,
+                "photo_sha": "5589d9893842feb1bb19f6be87a4eb5aec0262804ef993231d6cb6358fbfdb7b",
+                "label": "day 13",
+                "over_threshold": false
+            },
+            {
+                "observation_id": 14,
+                "at": "2026-09-03T07:12:00+00:00",
+                "day": 13.014,
+                "length_mm": 128.2,
+                "photo_sha": "652df61797987c7e2b532891e5a1c26cb9d17b352e2602cddc1ed4618eb792c8",
+                "label": "day 14",
+                "over_threshold": false
+            },
+            {
+                "observation_id": 15,
+                "at": "2026-09-04T06:37:00+00:00",
+                "day": 13.99,
+                "length_mm": 129.3,
+                "photo_sha": "88a91b42c8f31136f5e05d553a768ca843725d73547a3e5994c941b15eb6f6d7",
+                "label": "day 15",
+                "over_threshold": false
+            },
+            {
+                "observation_id": 16,
+                "at": "2026-09-05T06:51:00+00:00",
+                "day": 14.999,
+                "length_mm": 132.2,
+                "photo_sha": "818449b8c7a8b141b8225dd7ce3f0e1cc9506e00bb5bfc6c77e71757ff6927c7",
+                "label": "day 16",
+                "over_threshold": false
+            },
+            {
+                "observation_id": 17,
+                "at": "2026-09-06T07:03:00+00:00",
+                "day": 16.008,
+                "length_mm": 132.9,
+                "photo_sha": "67b284d4dae5fd3774b9daa78ae0dd29510e486ed6c6d9d999cb33e1c0197488",
+                "label": "day 17",
+                "over_threshold": false
+            },
+            {
+                "observation_id": 18,
+                "at": "2026-09-07T07:08:00+00:00",
+                "day": 17.011,
+                "length_mm": 134.3,
+                "photo_sha": "1016a44be397104ff3ee46fc2dea4136d269e8dc9fc66abc462f75633c2cbdea",
+                "label": "day 18",
+                "over_threshold": false
+            }
+        ]
+    },
+    "schedule": {
+        "site_id": "SITE-001",
+        "name": "Spot 1 \u00b7 28.61397, 77.20906",
+        "growth": {
+            "mm_per_day": 1.392,
+            "mm_per_week": 9.74,
+            "fit_r2": 0.974,
+            "readings": 18,
+            "basis": "least-squares fit over the readings stored for this spot"
+        },
+        "rain": {
+            "expected_mm": 70.0,
+            "window_days": 14,
+            "window_from": "2026-09-07",
+            "window_to": "2026-09-20",
+            "factor": 2.167,
+            "basis": "normal",
+            "station": "New Delhi",
+            "distance_km": 0.4,
+            "source_table": "built-in table",
+            "phase": "monsoon",
+            "daily": [
+                {
+                    "date": "2026-09-07",
+                    "mm": 5.0
+                },
+                {
+                    "date": "2026-09-08",
+                    "mm": 5.0
+                },
+                {
+                    "date": "2026-09-09",
+                    "mm": 5.0
+                },
+                {
+                    "date": "2026-09-10",
+                    "mm": 5.0
+                },
+                {
+                    "date": "2026-09-11",
+                    "mm": 5.0
+                },
+                {
+                    "date": "2026-09-12",
+                    "mm": 5.0
+                },
+                {
+                    "date": "2026-09-13",
+                    "mm": 5.0
+                },
+                {
+                    "date": "2026-09-14",
+                    "mm": 5.0
+                },
+                {
+                    "date": "2026-09-15",
+                    "mm": 5.0
+                },
+                {
+                    "date": "2026-09-16",
+                    "mm": 5.0
+                },
+                {
+                    "date": "2026-09-17",
+                    "mm": 5.0
+                },
+                {
+                    "date": "2026-09-18",
+                    "mm": 5.0
+                },
+                {
+                    "date": "2026-09-19",
+                    "mm": 5.0
+                },
+                {
+                    "date": "2026-09-20",
+                    "mm": 5.0
+                }
+            ],
+            "note": "Monthly normal for New Delhi, 0 km away, apportioned across the 14 days. A normal is what a fortnight like this usually brings, not a forecast. Post a real forecast to /api/rainfall and it is used instead."
+        },
+        "traffic": {
+            "road_class": "residential_lane",
+            "road_class_label": "Residential lane",
+            "commercial_vehicles_per_day": 300,
+            "factor": 1.0,
+            "basis": "assumed",
+            "reference_cvpd": 300.0,
+            "note": "No road class and no count. Treated as a residential lane at 300 commercial vehicles a day, which is the reference road \u2014 the traffic term is 1.0 and changes nothing."
+        },
+        "window_days": 14,
+        "score_scale": {
+            "floor_mm_per_day": 0.05,
+            "ceiling_mm_per_day": 10.0,
+            "shape": "logarithmic between the two"
+        },
+        "effective_mm_per_day": 3.016,
+        "score": 77,
+        "band": "URGENT",
+        "action": "Schedule before the next rain.",
+        "formula": "1.392 mm/day \u00d7 2.17 rain \u00d7 1.00 traffic = 3.016 mm/day effective",
+        "monsoon_cross_date": "2026-09-12T12:02:52.089811+00:00",
+        "monsoon_days_remaining": 4.8,
+        "dry_cross_date": "2026-09-18T13:49:52.894232+00:00",
+        "dry_days_remaining": 10.9,
+        "days_bought_by_rain": 6.1,
+        "verdict": "SEAL SOON"
+    },
+    "verify": {
+        "state": "ON TREND",
+        "last_step_mm": 1.4,
+        "expected_step_mm": 1.4,
+        "gap_days": 1.0,
+        "note": "The last pass gained 1.4 mm against an expected 1.4. Still growing as predicted."
+    },
+    "passes": [
+        {
+            "observation_id": 1,
+            "day": 1,
+            "captured_at": "2026-08-21T06:52:00",
+            "length_mm": 110.1,
+            "arc_px": 155.0,
+            "growth_since_baseline_mm": 0.0,
+            "lat": 28.61396864,
+            "lon": 77.20906425,
+            "gps_source": "exif",
+            "accuracy_m": 4.5,
+            "heading_deg": 98.68,
+            "geotag_written": false,
+            "auto_shutter": false,
+            "photo_sha": "4a5ad80eb77e420c43385da083ec7642d5f60cf141f94249bc691d0259cd63d9",
+            "photo_name": "day01_20260821.png",
+            "label": "day 1",
+            "scale_source": "lens optics (80 mm equiv at 1200 mm)",
+            "match": {
+                "site_id": "SITE-001",
+                "same_spot": false,
+                "confidence": 1.0,
+                "why": "first photograph of this spot",
+                "warning": null,
+                "distance_m": null,
+                "heading_delta_deg": null,
+                "hash_distance": null
+            }
+        },
+        {
+            "observation_id": 2,
+            "day": 2,
+            "captured_at": "2026-08-22T06:54:00",
+            "length_mm": 111.9,
+            "arc_px": 157.5,
+            "growth_since_baseline_mm": 1.8,
+            "lat": 28.61395806,
+            "lon": 77.20906192,
+            "gps_source": "exif",
+            "accuracy_m": 4.5,
+            "heading_deg": 94.54,
+            "geotag_written": false,
+            "auto_shutter": false,
+            "photo_sha": "18150d1a33327feb0c0074523516b94ccb0da279c71824bbc7818044ff735bd5",
+            "photo_name": "day02_20260822.png",
+            "label": "day 2",
+            "scale_source": "lens optics (80 mm equiv at 1200 mm)",
+            "match": {
+                "site_id": "SITE-001",
+                "distance_m": 1.2,
+                "heading_delta_deg": 4.139999999999986,
+                "hash_distance": 1,
+                "confidence": 1.0,
+                "same_spot": true,
+                "warning": null,
+                "why": "1.2 m from the recorded position; camera pointing within 4 deg of before; scene matches (1/64 bits differ)"
+            }
+        },
+        {
+            "observation_id": 3,
+            "day": 3,
+            "captured_at": "2026-08-23T06:37:00",
+            "length_mm": 112.3,
+            "arc_px": 158.0,
+            "growth_since_baseline_mm": 2.2,
+            "lat": 28.61392683,
+            "lon": 77.20902839,
+            "gps_source": "exif",
+            "accuracy_m": 4.5,
+            "heading_deg": 97.31,
+            "geotag_written": false,
+            "auto_shutter": false,
+            "photo_sha": "02c6f4034942038972024b9ea63261211f6d1e844b4bd4b0ff1721acb286e5da",
+            "photo_name": "day03_20260823.png",
+            "label": "day 3",
+            "scale_source": "lens optics (80 mm equiv at 1200 mm)",
+            "match": {
+                "site_id": "SITE-001",
+                "distance_m": 5.29,
+                "heading_delta_deg": 0.7000000000000028,
+                "hash_distance": 1,
+                "confidence": 0.956,
+                "same_spot": true,
+                "warning": null,
+                "why": "5.3 m from the recorded position; camera pointing within 1 deg of before; scene matches (1/64 bits differ)"
+            }
+        },
+        {
+            "observation_id": 4,
+            "day": 4,
+            "captured_at": "2026-08-24T07:16:00",
+            "length_mm": 115.1,
+            "arc_px": 162.0,
+            "growth_since_baseline_mm": 5.0,
+            "lat": 28.61395886,
+            "lon": 77.20904072,
+            "gps_source": "exif",
+            "accuracy_m": 4.5,
+            "heading_deg": 94.99,
+            "geotag_written": false,
+            "auto_shutter": false,
+            "photo_sha": "99b20227c011a85e3ea5d39f4917aba5a0b62c0debfc3a1ca8334c34304e88f6",
+            "photo_name": "day04_20260824.png",
+            "label": "day 4",
+            "scale_source": "lens optics (80 mm equiv at 1200 mm)",
+            "match": {
+                "site_id": "SITE-001",
+                "distance_m": 1.36,
+                "heading_delta_deg": 1.8500000000000227,
+                "hash_distance": 0,
+                "confidence": 1.0,
+                "same_spot": true,
+                "warning": null,
+                "why": "1.4 m from the recorded position; camera pointing within 2 deg of before; scene matches (0/64 bits differ)"
+            }
+        },
+        {
+            "observation_id": 5,
+            "day": 5,
+            "captured_at": "2026-08-25T07:06:00",
+            "length_mm": 117.9,
+            "arc_px": 166.0,
+            "growth_since_baseline_mm": 7.8,
+            "lat": 28.61398247,
+            "lon": 77.20900819,
+            "gps_source": "exif",
+            "accuracy_m": 4.5,
+            "heading_deg": 78.93,
+            "geotag_written": false,
+            "auto_shutter": false,
+            "photo_sha": "08a0af97940e894e5dc89809e95e7fbce48f280af894c2a115e86fcbf09aa030",
+            "photo_name": "day05_20260825.png",
+            "label": "day 5",
+            "scale_source": "lens optics (80 mm equiv at 1200 mm)",
+            "match": {
+                "site_id": "SITE-001",
+                "distance_m": 5.14,
+                "heading_delta_deg": 17.44999999999999,
+                "hash_distance": 0,
+                "confidence": 0.938,
+                "same_spot": true,
+                "warning": null,
+                "why": "5.1 m from the recorded position; camera pointing within 17 deg of before; scene matches (0/64 bits differ)"
+            }
+        },
+        {
+            "observation_id": 6,
+            "day": 6,
+            "captured_at": "2026-08-26T06:38:00",
+            "length_mm": 120.4,
+            "arc_px": 169.5,
+            "growth_since_baseline_mm": 10.3,
+            "lat": 28.61399686,
+            "lon": 77.20904122,
+            "gps_source": "exif",
+            "accuracy_m": 4.5,
+            "heading_deg": 88.15,
+            "geotag_written": false,
+            "auto_shutter": false,
+            "photo_sha": "8afa443bd347ef7cbad4b695d9117137c1ce94cd1596a80d637ae27b200fbc54",
+            "photo_name": "day06_20260826.png",
+            "label": "day 6",
+            "scale_source": "lens optics (80 mm equiv at 1200 mm)",
+            "match": {
+                "site_id": "SITE-001",
+                "distance_m": 4.21,
+                "heading_delta_deg": 4.759999999999991,
+                "hash_distance": 0,
+                "confidence": 1.0,
+                "same_spot": true,
+                "warning": null,
+                "why": "4.2 m from the recorded position; camera pointing within 5 deg of before; scene matches (0/64 bits differ)"
+            }
+        },
+        {
+            "observation_id": 7,
+            "day": 7,
+            "captured_at": "2026-08-27T06:43:00",
+            "length_mm": 117.6,
+            "arc_px": 165.5,
+            "growth_since_baseline_mm": 7.5,
+            "lat": 28.61396119,
+            "lon": 77.20904328,
+            "gps_source": "exif",
+            "accuracy_m": 4.5,
+            "heading_deg": 93.53,
+            "geotag_written": false,
+            "auto_shutter": false,
+            "photo_sha": "0bc84198599424d6db556cf16051863cf23558e573698ac8bbe580348d4d5ece",
+            "photo_name": "day07_20260827.png",
+            "label": "day 7",
+            "scale_source": "lens optics (80 mm equiv at 1200 mm)",
+            "match": {
+                "site_id": "SITE-001",
+                "distance_m": 0.52,
+                "heading_delta_deg": 1.4099999999999966,
+                "hash_distance": 0,
+                "confidence": 1.0,
+                "same_spot": true,
+                "warning": null,
+                "why": "0.5 m from the recorded position; camera pointing within 1 deg of before; scene matches (0/64 bits differ)"
+            }
+        },
+        {
+            "observation_id": 8,
+            "day": 8,
+            "captured_at": "2026-08-28T07:04:00",
+            "length_mm": 119.7,
+            "arc_px": 168.5,
+            "growth_since_baseline_mm": 9.6,
+            "lat": 28.61391878,
+            "lon": 77.20900128,
+            "gps_source": "exif",
+            "accuracy_m": 4.5,
+            "heading_deg": 87.56,
+            "geotag_written": false,
+            "auto_shutter": false,
+            "photo_sha": "1300c74107e9a285cfef8d90dbaab312246c1ae8a15f787fd98ba6667964e4c2",
+            "photo_name": "day08_20260828.png",
+            "label": "day 8",
+            "scale_source": "lens optics (80 mm equiv at 1200 mm)",
+            "match": {
+                "site_id": "SITE-001",
+                "distance_m": 6.42,
+                "heading_delta_deg": 4.759999999999991,
+                "hash_distance": 1,
+                "confidence": 0.908,
+                "same_spot": true,
+                "warning": null,
+                "why": "6.4 m from the recorded position; camera pointing within 5 deg of before; scene matches (1/64 bits differ)"
+            }
+        },
+        {
+            "observation_id": 9,
+            "day": 9,
+            "captured_at": "2026-08-29T07:02:00",
+            "length_mm": 121.5,
+            "arc_px": 171.0,
+            "growth_since_baseline_mm": 11.4,
+            "lat": 28.61395033,
+            "lon": 77.20902772,
+            "gps_source": "exif",
+            "accuracy_m": 4.5,
+            "heading_deg": 94.48,
+            "geotag_written": false,
+            "auto_shutter": false,
+            "photo_sha": "da20a49d0ed7eee6e20e86f81fe892ae397fa836dff53e23ff8069068551bb2e",
+            "photo_name": "day09_20260829.png",
+            "label": "day 9",
+            "scale_source": "lens optics (80 mm equiv at 1200 mm)",
+            "match": {
+                "site_id": "SITE-001",
+                "distance_m": 1.26,
+                "heading_delta_deg": 2.760000000000005,
+                "hash_distance": 0,
+                "confidence": 1.0,
+                "same_spot": true,
+                "warning": null,
+                "why": "1.3 m from the recorded position; camera pointing within 3 deg of before; scene matches (0/64 bits differ)"
+            }
+        },
+        {
+            "observation_id": 10,
+            "day": 10,
+            "captured_at": "2026-08-30T06:57:00",
+            "length_mm": 125.4,
+            "arc_px": 176.5,
+            "growth_since_baseline_mm": 15.3,
+            "lat": 28.61398986,
+            "lon": 77.20900478,
+            "gps_source": "exif",
+            "accuracy_m": 4.5,
+            "heading_deg": 99.33,
+            "geotag_written": false,
+            "auto_shutter": false,
+            "photo_sha": "27c00258c4188e81d98a87346fc339d83c82fe208e5b9b58ebbe393e8bde6f43",
+            "photo_name": "day10_20260830.png",
+            "label": "day 10",
+            "scale_source": "lens optics (80 mm equiv at 1200 mm)",
+            "match": {
+                "site_id": "SITE-001",
+                "distance_m": 4.62,
+                "heading_delta_deg": 7.299999999999997,
+                "hash_distance": 1,
+                "confidence": 0.954,
+                "same_spot": true,
+                "warning": null,
+                "why": "4.6 m from the recorded position; camera pointing within 7 deg of before; scene matches (1/64 bits differ)"
+            }
+        },
+        {
+            "observation_id": 11,
+            "day": 11,
+            "captured_at": "2026-08-31T06:58:00",
+            "length_mm": 126.8,
+            "arc_px": 178.5,
+            "growth_since_baseline_mm": 16.7,
+            "lat": 28.61391986,
+            "lon": 77.20908222,
+            "gps_source": "exif",
+            "accuracy_m": 4.5,
+            "heading_deg": 90.59,
+            "geotag_written": false,
+            "auto_shutter": false,
+            "photo_sha": "3fbb143cb3c146ee6a5e304baf9100e50ddc8270a6cb7981366665119669ea08",
+            "photo_name": "day11_20260831.png",
+            "label": "day 11",
+            "scale_source": "lens optics (80 mm equiv at 1200 mm)",
+            "match": {
+                "site_id": "SITE-001",
+                "distance_m": 6.71,
+                "heading_delta_deg": 2.170000000000016,
+                "hash_distance": 1,
+                "confidence": 0.908,
+                "same_spot": true,
+                "warning": null,
+                "why": "6.7 m from the recorded position; camera pointing within 2 deg of before; scene matches (1/64 bits differ)"
+            }
+        },
+        {
+            "observation_id": 12,
+            "day": 12,
+            "captured_at": "2026-09-01T07:03:00",
+            "length_mm": 126.1,
+            "arc_px": 177.5,
+            "growth_since_baseline_mm": 16.0,
+            "lat": 28.61391414,
+            "lon": 77.2089525,
+            "gps_source": "exif",
+            "accuracy_m": 4.5,
+            "heading_deg": 90.07,
+            "geotag_written": false,
+            "auto_shutter": false,
+            "photo_sha": "8a32662f173fe788bc70c3244fd1e916eaff69426a968fb8202a1b44c607bda3",
+            "photo_name": "day12_20260901.png",
+            "label": "day 12",
+            "scale_source": "lens optics (80 mm equiv at 1200 mm)",
+            "match": {
+                "site_id": "SITE-001",
+                "distance_m": 9.53,
+                "heading_delta_deg": 2.490000000000009,
+                "hash_distance": 0,
+                "confidence": 0.856,
+                "same_spot": true,
+                "warning": null,
+                "why": "9.5 m from the recorded position; camera pointing within 2 deg of before; scene matches (0/64 bits differ)"
+            }
+        },
+        {
+            "observation_id": 13,
+            "day": 13,
+            "captured_at": "2026-09-02T07:11:00",
+            "length_mm": 127.2,
+            "arc_px": 179.0,
+            "growth_since_baseline_mm": 17.1,
+            "lat": 28.61391586,
+            "lon": 77.20911825,
+            "gps_source": "exif",
+            "accuracy_m": 4.5,
+            "heading_deg": 96.6,
+            "geotag_written": false,
+            "auto_shutter": false,
+            "photo_sha": "5589d9893842feb1bb19f6be87a4eb5aec0262804ef993231d6cb6358fbfdb7b",
+            "photo_name": "day13_20260902.png",
+            "label": "day 13",
+            "scale_source": "lens optics (80 mm equiv at 1200 mm)",
+            "match": {
+                "site_id": "SITE-001",
+                "distance_m": 9.62,
+                "heading_delta_deg": 4.25,
+                "hash_distance": 0,
+                "confidence": 0.847,
+                "same_spot": true,
+                "warning": null,
+                "why": "9.6 m from the recorded position; camera pointing within 4 deg of before; scene matches (0/64 bits differ)"
+            }
+        },
+        {
+            "observation_id": 14,
+            "day": 14,
+            "captured_at": "2026-09-03T07:12:00",
+            "length_mm": 128.2,
+            "arc_px": 180.5,
+            "growth_since_baseline_mm": 18.1,
+            "lat": 28.61396361,
+            "lon": 77.20904642,
+            "gps_source": "exif",
+            "accuracy_m": 4.5,
+            "heading_deg": 97.68,
+            "geotag_written": false,
+            "auto_shutter": false,
+            "photo_sha": "652df61797987c7e2b532891e5a1c26cb9d17b352e2602cddc1ed4618eb792c8",
+            "photo_name": "day14_20260903.png",
+            "label": "day 14",
+            "scale_source": "lens optics (80 mm equiv at 1200 mm)",
+            "match": {
+                "site_id": "SITE-001",
+                "distance_m": 1.71,
+                "heading_delta_deg": 5.0,
+                "hash_distance": 0,
+                "confidence": 1.0,
+                "same_spot": true,
+                "warning": null,
+                "why": "1.7 m from the recorded position; camera pointing within 5 deg of before; scene matches (0/64 bits differ)"
+            }
+        },
+        {
+            "observation_id": 15,
+            "day": 15,
+            "captured_at": "2026-09-04T06:37:00",
+            "length_mm": 129.3,
+            "arc_px": 182.0,
+            "growth_since_baseline_mm": 19.2,
+            "lat": 28.61390975,
+            "lon": 77.20897117,
+            "gps_source": "exif",
+            "accuracy_m": 4.5,
+            "heading_deg": 81.02,
+            "geotag_written": false,
+            "auto_shutter": false,
+            "photo_sha": "88a91b42c8f31136f5e05d553a768ca843725d73547a3e5994c941b15eb6f6d7",
+            "photo_name": "day15_20260904.png",
+            "label": "day 15",
+            "scale_source": "lens optics (80 mm equiv at 1200 mm)",
+            "match": {
+                "site_id": "SITE-001",
+                "distance_m": 7.97,
+                "heading_delta_deg": 12.019999999999982,
+                "hash_distance": 1,
+                "confidence": 0.838,
+                "same_spot": true,
+                "warning": null,
+                "why": "8.0 m from the recorded position; camera pointing within 12 deg of before; scene matches (1/64 bits differ)"
+            }
+        },
+        {
+            "observation_id": 16,
+            "day": 16,
+            "captured_at": "2026-09-05T06:51:00",
+            "length_mm": 132.2,
+            "arc_px": 186.0,
+            "growth_since_baseline_mm": 22.1,
+            "lat": 28.61390736,
+            "lon": 77.20900717,
+            "gps_source": "exif",
+            "accuracy_m": 4.5,
+            "heading_deg": 84.41,
+            "geotag_written": false,
+            "auto_shutter": false,
+            "photo_sha": "818449b8c7a8b141b8225dd7ce3f0e1cc9506e00bb5bfc6c77e71757ff6927c7",
+            "photo_name": "day16_20260905.png",
+            "label": "day 16",
+            "scale_source": "lens optics (80 mm equiv at 1200 mm)",
+            "match": {
+                "site_id": "SITE-001",
+                "distance_m": 5.26,
+                "heading_delta_deg": 7.829999999999984,
+                "hash_distance": 1,
+                "confidence": 0.933,
+                "same_spot": true,
+                "warning": null,
+                "why": "5.3 m from the recorded position; camera pointing within 8 deg of before; scene matches (1/64 bits differ)"
+            }
+        },
+        {
+            "observation_id": 17,
+            "day": 17,
+            "captured_at": "2026-09-06T07:03:00",
+            "length_mm": 132.9,
+            "arc_px": 187.0,
+            "growth_since_baseline_mm": 22.8,
+            "lat": 28.61387453,
+            "lon": 77.20904119,
+            "gps_source": "exif",
+            "accuracy_m": 4.5,
+            "heading_deg": 98.4,
+            "geotag_written": false,
+            "auto_shutter": false,
+            "photo_sha": "67b284d4dae5fd3774b9daa78ae0dd29510e486ed6c6d9d999cb33e1c0197488",
+            "photo_name": "day17_20260906.png",
+            "label": "day 17",
+            "scale_source": "lens optics (80 mm equiv at 1200 mm)",
+            "match": {
+                "site_id": "SITE-001",
+                "distance_m": 8.05,
+                "heading_delta_deg": 6.650000000000006,
+                "hash_distance": 0,
+                "confidence": 0.886,
+                "same_spot": true,
+                "warning": null,
+                "why": "8.1 m from the recorded position; camera pointing within 7 deg of before; scene matches (0/64 bits differ)"
+            }
+        },
+        {
+            "observation_id": 18,
+            "day": 18,
+            "captured_at": "2026-09-07T07:08:00",
+            "length_mm": 134.3,
+            "arc_px": 189.0,
+            "growth_since_baseline_mm": 24.2,
+            "lat": 28.61392547,
+            "lon": 77.20907353,
+            "gps_source": "exif",
+            "accuracy_m": 4.5,
+            "heading_deg": 95.47,
+            "geotag_written": false,
+            "auto_shutter": false,
+            "photo_sha": "1016a44be397104ff3ee46fc2dea4136d269e8dc9fc66abc462f75633c2cbdea",
+            "photo_name": "day18_20260907.png",
+            "label": "day 18",
+            "scale_source": "lens optics (80 mm equiv at 1200 mm)",
+            "match": {
+                "site_id": "SITE-001",
+                "distance_m": 4.48,
+                "heading_delta_deg": 3.3299999999999983,
+                "hash_distance": 0,
+                "confidence": 1.0,
+                "same_spot": true,
+                "warning": null,
+                "why": "4.5 m from the recorded position; camera pointing within 3 deg of before; scene matches (0/64 bits differ)"
+            }
+        }
+    ],
+    "series": [
+        {
+            "observation_id": 1,
+            "at": "2026-08-21T06:52:00+00:00",
+            "day": 0.0,
+            "length_mm": 110.1,
+            "photo_sha": "4a5ad80eb77e420c43385da083ec7642d5f60cf141f94249bc691d0259cd63d9",
+            "label": "day 1",
+            "over_threshold": false
+        },
+        {
+            "observation_id": 2,
+            "at": "2026-08-22T06:54:00+00:00",
+            "day": 1.001,
+            "length_mm": 111.9,
+            "photo_sha": "18150d1a33327feb0c0074523516b94ccb0da279c71824bbc7818044ff735bd5",
+            "label": "day 2",
+            "over_threshold": false
+        },
+        {
+            "observation_id": 3,
+            "at": "2026-08-23T06:37:00+00:00",
+            "day": 1.99,
+            "length_mm": 112.3,
+            "photo_sha": "02c6f4034942038972024b9ea63261211f6d1e844b4bd4b0ff1721acb286e5da",
+            "label": "day 3",
+            "over_threshold": false
+        },
+        {
+            "observation_id": 4,
+            "at": "2026-08-24T07:16:00+00:00",
+            "day": 3.017,
+            "length_mm": 115.1,
+            "photo_sha": "99b20227c011a85e3ea5d39f4917aba5a0b62c0debfc3a1ca8334c34304e88f6",
+            "label": "day 4",
+            "over_threshold": false
+        },
+        {
+            "observation_id": 5,
+            "at": "2026-08-25T07:06:00+00:00",
+            "day": 4.01,
+            "length_mm": 117.9,
+            "photo_sha": "08a0af97940e894e5dc89809e95e7fbce48f280af894c2a115e86fcbf09aa030",
+            "label": "day 5",
+            "over_threshold": false
+        },
+        {
+            "observation_id": 6,
+            "at": "2026-08-26T06:38:00+00:00",
+            "day": 4.99,
+            "length_mm": 120.4,
+            "photo_sha": "8afa443bd347ef7cbad4b695d9117137c1ce94cd1596a80d637ae27b200fbc54",
+            "label": "day 6",
+            "over_threshold": false
+        },
+        {
+            "observation_id": 7,
+            "at": "2026-08-27T06:43:00+00:00",
+            "day": 5.994,
+            "length_mm": 117.6,
+            "photo_sha": "0bc84198599424d6db556cf16051863cf23558e573698ac8bbe580348d4d5ece",
+            "label": "day 7",
+            "over_threshold": false
+        },
+        {
+            "observation_id": 8,
+            "at": "2026-08-28T07:04:00+00:00",
+            "day": 7.008,
+            "length_mm": 119.7,
+            "photo_sha": "1300c74107e9a285cfef8d90dbaab312246c1ae8a15f787fd98ba6667964e4c2",
+            "label": "day 8",
+            "over_threshold": false
+        },
+        {
+            "observation_id": 9,
+            "at": "2026-08-29T07:02:00+00:00",
+            "day": 8.007,
+            "length_mm": 121.5,
+            "photo_sha": "da20a49d0ed7eee6e20e86f81fe892ae397fa836dff53e23ff8069068551bb2e",
+            "label": "day 9",
+            "over_threshold": false
+        },
+        {
+            "observation_id": 10,
+            "at": "2026-08-30T06:57:00+00:00",
+            "day": 9.003,
+            "length_mm": 125.4,
+            "photo_sha": "27c00258c4188e81d98a87346fc339d83c82fe208e5b9b58ebbe393e8bde6f43",
+            "label": "day 10",
+            "over_threshold": false
+        },
+        {
+            "observation_id": 11,
+            "at": "2026-08-31T06:58:00+00:00",
+            "day": 10.004,
+            "length_mm": 126.8,
+            "photo_sha": "3fbb143cb3c146ee6a5e304baf9100e50ddc8270a6cb7981366665119669ea08",
+            "label": "day 11",
+            "over_threshold": false
+        },
+        {
+            "observation_id": 12,
+            "at": "2026-09-01T07:03:00+00:00",
+            "day": 11.008,
+            "length_mm": 126.1,
+            "photo_sha": "8a32662f173fe788bc70c3244fd1e916eaff69426a968fb8202a1b44c607bda3",
+            "label": "day 12",
+            "over_threshold": false
+        },
+        {
+            "observation_id": 13,
+            "at": "2026-09-02T07:11:00+00:00",
+            "day": 12.013,
+            "length_mm": 127.2,
+            "photo_sha": "5589d9893842feb1bb19f6be87a4eb5aec0262804ef993231d6cb6358fbfdb7b",
+            "label": "day 13",
+            "over_threshold": false
+        },
+        {
+            "observation_id": 14,
+            "at": "2026-09-03T07:12:00+00:00",
+            "day": 13.014,
+            "length_mm": 128.2,
+            "photo_sha": "652df61797987c7e2b532891e5a1c26cb9d17b352e2602cddc1ed4618eb792c8",
+            "label": "day 14",
+            "over_threshold": false
+        },
+        {
+            "observation_id": 15,
+            "at": "2026-09-04T06:37:00+00:00",
+            "day": 13.99,
+            "length_mm": 129.3,
+            "photo_sha": "88a91b42c8f31136f5e05d553a768ca843725d73547a3e5994c941b15eb6f6d7",
+            "label": "day 15",
+            "over_threshold": false
+        },
+        {
+            "observation_id": 16,
+            "at": "2026-09-05T06:51:00+00:00",
+            "day": 14.999,
+            "length_mm": 132.2,
+            "photo_sha": "818449b8c7a8b141b8225dd7ce3f0e1cc9506e00bb5bfc6c77e71757ff6927c7",
+            "label": "day 16",
+            "over_threshold": false
+        },
+        {
+            "observation_id": 17,
+            "at": "2026-09-06T07:03:00+00:00",
+            "day": 16.008,
+            "length_mm": 132.9,
+            "photo_sha": "67b284d4dae5fd3774b9daa78ae0dd29510e486ed6c6d9d999cb33e1c0197488",
+            "label": "day 17",
+            "over_threshold": false
+        },
+        {
+            "observation_id": 18,
+            "at": "2026-09-07T07:08:00+00:00",
+            "day": 17.011,
+            "length_mm": 134.3,
+            "photo_sha": "1016a44be397104ff3ee46fc2dea4136d269e8dc9fc66abc462f75633c2cbdea",
+            "label": "day 18",
+            "over_threshold": false
+        }
+    ]
+}

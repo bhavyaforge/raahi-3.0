@@ -1,0 +1,52 @@
+{
+    "rows": [
+        {
+            "rank": 1,
+            "site_id": "SITE-001",
+            "name": "Spot 1 \u00b7 28.61397, 77.20906",
+            "lat": 28.61394125,
+            "lon": 77.20903412,
+            "road_class": "Residential lane",
+            "observations": 18,
+            "latest_mm": 134.3,
+            "baseline_mm": 110.1,
+            "mm_per_day": 1.392,
+            "mm_per_week": 9.74,
+            "days_remaining": 10.9,
+            "lead_time_days": 28.3,
+            "predicted_cross_date": "2026-09-18T13:49:52.894232+00:00",
+            "verdict": "SEAL SOON",
+            "fit_r2": 0.974,
+            "rain_factor": 2.167,
+            "rain_mm": 70.0,
+            "rain_basis": "normal",
+            "traffic_factor": 1.0,
+            "priority": 77,
+            "band": "URGENT",
+            "action": "Schedule before the next rain.",
+            "formula": "1.392 mm/day \u00d7 2.17 rain \u00d7 1.00 traffic = 3.016 mm/day effective",
+            "effective_mm_per_day": 3.016,
+            "monsoon_cross_date": "2026-09-12T12:02:52.089811+00:00",
+            "monsoon_days_remaining": 4.8,
+            "days_bought_by_rain": 6.1
+        }
+    ],
+    "lead_time": {
+        "sites_with_lead_time": 1,
+        "mean_days": 28.3,
+        "median_days": 28.3,
+        "min_days": 28.3,
+        "max_days": 28.3
+    },
+    "risk": {
+        "sites": 1,
+        "scored": 1,
+        "urgent": 1,
+        "high": 0,
+        "no_rate_yet": 0,
+        "soonest_crossing_days": 4.8,
+        "window_days": 14,
+        "rain_window_mm": 70.0,
+        "formula": "priority = growth rate (mm/day) \u00d7 rainfall factor \u00d7 traffic factor"
+    }
+}
