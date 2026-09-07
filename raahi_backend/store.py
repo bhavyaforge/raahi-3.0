@@ -198,6 +198,18 @@ class Store:
                 return candidate
         return None
 
+    def clear_photos(self):
+        """Delete every stored photo file. Used only when clearing the round."""
+        removed = 0
+        for name in os.listdir(self.photo_dir):
+            if name.lower().endswith(self.PHOTO_EXTENSIONS):
+                try:
+                    os.remove(os.path.join(self.photo_dir, name))
+                    removed += 1
+                except OSError:
+                    pass
+        return removed
+
     # -- sites -------------------------------------------------------------
     def next_site_id(self):
         """

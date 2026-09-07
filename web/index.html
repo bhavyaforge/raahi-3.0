@@ -54,75 +54,26 @@
     <div class="card">
       <h3>WORKING IN THIS BUILD</h3>
       <ul class="ticks">
-        <li>Finds the crack in a photograph without being told where it is</li>
-        <li>Follows every bend and reports length in millimetres</li>
-        <li>Reads GPS out of the photo's own EXIF, or off the device when capturing live</li>
-        <li>Decides whether today's photo is yesterday's crack — position, camera heading
-            and a fingerprint of the scene itself</li>
-        <li>Writes the position into the file's own hidden EXIF when the shutter fires,
-            so a webcam frame ends up carrying its coordinates the way a phone photo does</li>
-        <li>Presses its own shutter when a crack holds still in front of the camera</li>
-        <li>Fits a growth rate across passes and dates the threshold crossing</li>
-        <li>Reports <b>lead time</b>: days between first sighting and predicted failure</li>
-        <li>Ranks the seal list by <b>growth rate × rainfall forecast × traffic</b>,
-            with every term and its source printed beside the answer</li>
-        <li>Scores a damage detector per class, on a named split, sample size stated</li>
+        <li>Finds the crack in a photograph and measures its length in millimetres</li>
+        <li>Reads the GPS out of the photo's own metadata — and writes one in when
+            the camera did not</li>
+        <li>Recognises the same crack tomorrow: position, camera heading, and a
+            fingerprint of the scene itself</li>
+        <li>Turns repeat photographs into a growth rate and a sealing date</li>
+        <li>Ranks the seal list by <b>growth × rainfall × traffic</b></li>
       </ul>
     </div>
     <div class="card">
       <h3>NOT IN THIS BUILD, AND WE SAY SO</h3>
       <ul class="crosses">
-        <li>No trained damage classifier. Detection is classical image processing,
-            not a model — the class labels on the seal list come from whoever typed them</li>
-        <li>No detection score to quote yet. The DETECTION QUALITY tab stays empty
-            until a real model is evaluated against real labels</li>
-        <li>Runs on a laptop or a phone browser, not on a truck</li>
-        <li>Daylight, close range, camera roughly overhead. Not heavy rain</li>
-        <li>Absolute length carries a small constant bias. Growth is a subtraction,
-            so the bias cancels — that is why growth is the number we report</li>
-        <li>No live weather feed. The rain term uses bundled monthly normals for Indian
-            stations, which say what a fortnight usually brings, not what next fortnight
-            will bring. Post a real forecast and it is used instead</li>
-        <li>No traffic counts. The traffic term uses road-class defaults until a
-            municipality supplies its own, and every answer says which it used</li>
+        <li>No trained damage classifier yet. The crack is found by image
+            processing, not by a model</li>
+        <li>Rainfall uses published monthly normals, not a live forecast. Every
+            answer says which it used</li>
+        <li>Traffic uses road-class defaults until a municipality supplies counts</li>
+        <li>Daylight, close range, camera roughly overhead</li>
       </ul>
     </div>
-  </div>
-
-  <div class="card" style="margin-top:18px">
-    <h3>HOW THE PIECES FIT</h3>
-    <div class="tscroll">
-    <table class="plain">
-      <thead><tr><th>FILE</th><th>WHAT IT DOES</th><th>THE PART THAT MATTERS</th></tr></thead>
-      <tbody>
-        <tr><td class="mono">raahi_backend/exif.py</td><td>Reads EXIF from JPEG and HEIC</td>
-            <td>GPS position, heading, focal length</td></tr>
-        <tr><td class="mono">raahi_backend/geotag.py</td><td>Writes GPS into a photograph</td>
-            <td>APP1 / eXIf block assembled by hand at the shutter</td></tr>
-        <tr><td class="mono">raahi_backend/geo.py</td><td>Decides if two photos are the same spot</td>
-            <td>Distance + heading + 64-bit scene hash</td></tr>
-        <tr><td class="mono">raahi_backend/rainfall.py</td><td>What rain is coming</td>
-            <td>Monthly normals by nearest station, or a real forecast</td></tr>
-        <tr><td class="mono">raahi_backend/traffic.py</td><td>What load the road carries</td>
-            <td>Commercial vehicles a day, by class or counted</td></tr>
-        <tr><td class="mono">raahi_backend/risk.py</td><td>Orders the seal list</td>
-            <td>growth × rain × traffic, with the working returned</td></tr>
-        <tr><td class="mono">raahi_backend/growth.py</td><td>Turns readings into a rate and a date</td>
-            <td>Least-squares fit, lead time in days</td></tr>
-        <tr><td class="mono">raahi_backend/metrics.py</td><td>Scores a detector</td>
-            <td>AP per class, COCO IoU sweep</td></tr>
-        <tr><td class="mono">raahi_backend/store.py</td><td>Keeps the record</td>
-            <td>SQLite + the original photos</td></tr>
-        <tr><td class="mono">web/app.js</td><td>Finds and measures the crack in the browser</td>
-            <td>Threshold, morphology, connected components</td></tr>
-      </tbody>
-    </table>
-    </div>
-    <p class="tiny" style="margin-top:14px">
-      Everything is stored in <span class="mono">data/</span> — one SQLite file and the photos,
-      byte for byte as the camera wrote them. Delete the folder to start clean.
-      Nothing leaves the machine.
-    </p>
   </div>
 
   <div class="card" style="margin-top:18px">
@@ -150,10 +101,9 @@
           find this spot again tomorrow.
         </p>
         <p class="tiny">
-          Choose several at once — a folder of daily passes, day 1 to day 18 — and they
-          are measured and saved in order, one after another. A file named
-          <span class="mono">day07.jpg</span> is taken as day 7 when its metadata carries
-          no date of its own.
+          Choose <b>as many as you like</b> at once — two, five, eighteen, a whole
+          season. They are measured and saved in order. Two on different days is
+          already a growth rate; more days make the date it predicts firmer.
         </p>
       </div>
       <div id="camwrap" style="margin-top:16px"></div>
@@ -164,7 +114,14 @@
       <label class="f" for="rname">LABEL (OPTIONAL)</label>
       <input type="text" id="rname" placeholder="Morning round" aria-label="Reading label">
 
-      <div id="siteforce"></div>
+      <div class="spotrow">
+        <label class="pick">
+          <input type="checkbox" id="newspot">
+          <span><b>This is a different crack</b> — start a new spot and keep everything
+                already recorded.</span>
+        </label>
+        <div id="siteforce"></div>
+      </div>
 
       <button class="btn" id="saveread" disabled>SAVE THIS READING</button>
       <div id="msg" role="status" aria-live="polite"></div>
@@ -181,13 +138,9 @@
         <input type="number" id="dayno" placeholder="blank unless the dates were stripped"
                step="1" min="1" aria-label="Day number in the series">
         <p class="tiny" style="margin-top:8px">
-          Only used when a photo carries no date of its own. The first day number seen for
-          a spot fixes day one; the rest are counted from it, so eighteen photographs
-          uploaded in one sitting still land on eighteen different days.
-        </p>
-        <p class="tiny" style="margin-top:8px">
-          Used only when no calibration exists: with the lens focal length from EXIF,
-          the distance alone gives millimetres per pixel.
+          The day number is only used when a photo carries no date of its own. The first
+          one seen for a spot fixes day one and the rest are counted from it, so photos
+          uploaded in a single sitting still land on different days.
         </p>
         <div id="cyclewrap"></div>
       </details>
@@ -220,6 +173,13 @@
   <p class="lede">Every place a photo has been taken, with the position the app will match
      against tomorrow. Photograph the same crack again and it lands in the same row.</p>
   <div id="sitelist"></div>
+  <div class="card" style="margin-top:18px">
+    <h3>START OVER</h3>
+    <p class="tiny">Clears every spot, every reading and every stored photograph, so the
+       next round begins from nothing. Your calibration and the seal threshold are kept.
+       There is no undo.</p>
+    <button class="btn ghost" id="clearall" style="margin-top:12px">CLEAR EVERY RECORD</button>
+  </div>
 </section>
 
 <!-- ================= 03 GROWTH ================= -->
@@ -242,6 +202,8 @@
       </div>
     </div>
   </div>
+
+  <div id="signal"></div>
 
   <div class="card" style="margin-bottom:18px">
     <h3>BASELINE AGAINST LATEST</h3>

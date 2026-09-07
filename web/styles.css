@@ -603,3 +603,49 @@ select:focus{border-color:var(--amber)}
   .rrows>div b{text-align:left}
   .eq .op{display:none}
 }
+
+/* ------------------------------------------------------------------
+   The seal signal, the spot controls.
+   ------------------------------------------------------------------ */
+
+/* One verdict, in colour, above everything else on the GROWTH tab. A ward
+   engineer reads whether to send a crew — not a growth rate. */
+.signal{display:flex;align-items:center;gap:20px;padding:22px 26px;margin-bottom:18px;
+  border-radius:14px;border:1px solid var(--edge);background:var(--bg2)}
+.signal .lamp{width:46px;height:46px;border-radius:50%;flex:0 0 46px}
+.signal .t{font-size:24px;font-weight:800;letter-spacing:2.5px}
+.signal .s{margin-top:6px;font-size:13px;line-height:1.6;color:var(--dim);max-width:64ch}
+.signal .by{margin-left:auto;text-align:right;padding-left:24px;flex:0 0 auto}
+.signal .by span{display:block;font-size:10px;letter-spacing:1.2px;color:var(--faint)}
+.signal .by b{font-size:16px;color:var(--ink);font-family:var(--mono)}
+
+.signal.red{border-color:rgba(226,86,74,.45);background:linear-gradient(135deg,
+  rgba(226,86,74,.14),rgba(226,86,74,.04))}
+.signal.red .lamp{background:#E2564A;box-shadow:0 0 26px rgba(226,86,74,.6)}
+.signal.red .t{color:#F0A79F}
+
+.signal.amber{border-color:rgba(224,165,75,.4);background:linear-gradient(135deg,
+  rgba(224,165,75,.12),rgba(224,165,75,.03))}
+.signal.amber .lamp{background:var(--amber);box-shadow:0 0 26px rgba(224,165,75,.5)}
+.signal.amber .t{color:var(--amber)}
+
+.signal.green{border-color:rgba(47,191,113,.4);background:linear-gradient(135deg,
+  rgba(47,191,113,.12),rgba(47,191,113,.03))}
+.signal.green .lamp{background:#2FBF71;box-shadow:0 0 26px rgba(47,191,113,.5)}
+.signal.green .t{color:#8FE8B8}
+
+/* Grey, not green. Never having been re-photographed is not the same as safe. */
+.signal.grey .lamp{background:rgba(167,152,128,.3)}
+.signal.grey .t{color:var(--faint)}
+
+.spotrow{margin-top:16px}
+.pick{display:flex;gap:10px;align-items:flex-start;font-size:12.5px;line-height:1.6;
+  color:var(--dim);cursor:pointer;padding:12px 14px;border:1px solid var(--edge);
+  border-radius:10px;background:rgba(255,255,255,.015)}
+.pick input{width:15px;height:15px;margin-top:2px;accent-color:var(--amber);cursor:pointer}
+.pick b{color:var(--ink)}
+
+@media (max-width:720px){
+  .signal{flex-wrap:wrap;gap:14px}
+  .signal .by{margin-left:0;padding-left:0;text-align:left}
+}

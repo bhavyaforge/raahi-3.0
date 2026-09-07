@@ -181,21 +181,36 @@ sentence explaining why that photo was matched to this spot.
 
 It is also plain JSON at `GET /api/report/<site-id>`.
 
-### 3c. Eighteen days, uploaded at once
+### 3c. Any number of photographs, uploaded at once
 
-Choose several files on the CAPTURE tab — a folder of daily passes, day 1 to day
-18 — and they are measured and saved strictly in order, with a line per file
-saying what happened to it. Order matters: the second photo of a spot has to
-find the first one already in the record before it can be recognised as the same
-place.
+Choose as many files as you like on the CAPTURE tab — **two, five, eighteen, a
+whole season**. They are measured and saved strictly in order, with a line per
+file saying what happened to it. Order matters: the second photo of a spot has
+to find the first one already in the record before it can be recognised as the
+same place. Two photographs on different days is already a growth rate; more
+days only make the date it predicts firmer.
 
 Dates come from the photographs themselves. When a file has none — metadata
-stripped, a webcam frame, a screenshot — a day number is used instead, taken
-from the file name (`day07.jpg`, `pass_7.png`, `d7.jpeg`) or typed into the
-capture form. The first day number seen for a spot fixes day one and the rest
-are counted from it, so eighteen photographs uploaded in one sitting still land
-on eighteen different days instead of collapsing into one and producing no rate
-at all. Every reading records which of the two dated it.
+stripped by a chat app, a webcam frame, a screenshot — a day number is used
+instead: from the file name (`day07.jpg`, `pass_7.png`), from the capture form,
+or failing both, from the file's position in the batch. The first day number
+seen for a spot fixes day one and the rest are counted from it, so a set of
+undated photographs uploaded in one sitting lands on consecutive days instead
+of collapsing into one and producing no rate at all. Every reading records
+which of the three dated it, and the upload line says so.
+
+### 3d. A second crack, and starting over
+
+**A different crack at the same kerb** is the one case position, heading and
+appearance cannot separate — two cracks a metre apart are inside every
+tolerance the app has. So the person holding the camera says: tick *"This is a
+different crack"* on the CAPTURE tab and the next upload opens its own spot,
+leaving everything already recorded untouched. In a batch only the first
+photograph may open the spot; the rest join it.
+
+**Starting over** is on the SPOTS tab: *Clear every record* removes every spot,
+reading and stored photograph. Calibration and the seal threshold survive,
+because those describe the camera and the policy rather than the road.
 
 ### 4. A baseline to measure against
 
@@ -248,6 +263,13 @@ Millimetres are worked out on the server, from the best source available:
 3. **the lens itself** — a 35 mm-equivalent focal length implies a 36 mm-wide
    frame, so focal length and shooting distance alone give millimetres per
    pixel with no reference object at all.
+4. **an assumed phone lens**, when the photograph carries no lens data at all —
+   a stripped file, a webcam frame. 26 mm equivalent is roughly the main camera
+   on an iPhone or a Pixel, and every reading it produces says *assumed* on its
+   face. Refusing outright was worse: the growth curve vanished and a first-time
+   user was sent to calibrate before they had seen the app do anything. Growth
+   is a subtraction, so a wrong constant scales both readings alike and largely
+   cancels out of the number this app actually sells.
 
 The calibration screen still exists, and it is unchanged in substance — it just
 lives on the **TRAINING** tab, hidden until you click *training tools* in the
@@ -300,13 +322,18 @@ python3 tools/selftest.py
 ```
 
 Starts the server, writes real geotagged photographs, uploads them over HTTP,
-and asserts 57 things about what comes back: that GPS is read from the file,
+and asserts 68 things about what comes back: that GPS is read from the file,
 that later passes land on the same spot, that a photo 12 km away does not, that
 the growth rate is positive, that a one-photo spot gets no invented date, that
 `growth × rain × traffic` really multiplies out to the effective rate printed
 beside it, that a supplied forecast replaces the bundled normals, that setting a
 road class moves the traffic term, that a photo sent with no metadata comes back
-off disk carrying the coordinates we wrote into it, that three files named
+off disk carrying the coordinates we wrote into it, that a photo with no lens
+data still measures in millimetres and says the lens was assumed, that a
+calibration displaces that assumption, that two undated photographs still yield
+a rate and two points to draw, that a different crack at the same position opens
+its own spot without disturbing the others, that clearing the round empties it
+and keeps the calibration, that three files named
 `day01`–`day03` land on three different days, that a photo which already had GPS
 is never rewritten, that an unnamed split is refused, that a 100 mm reference
 measures 100 mm, and that a deleted spot's id is never handed to a different

@@ -230,8 +230,39 @@ def measure_crack(rows, width, height):
     return round(best[0], 2), round(best[1], 2), width
 
 
+def check_assumed_lens():
+    """
+    The fallback, on its own, before any calibration exists.
+
+    It cannot be checked over HTTP later in this file: by then a calibration
+    has been recorded, and a calibration is *supposed* to beat an assumption.
+    So the ladder is checked directly — nothing known gives the assumed phone
+    lens and says so; a calibration then displaces it.
+    """
+    from raahi_backend.api import Api, ASSUMED_PHONE_FOCAL_35MM
+    from raahi_backend.store import Store
+
+    workdir = tempfile.mkdtemp(prefix="raahi-scale-")
+    try:
+        api = Api(Store(os.path.join(workdir, "data")))
+        mm_per_px, source = api._scale_for(None, 760, None, 1200)
+        check("with no lens data at all, the scale falls back to a phone lens",
+              mm_per_px is not None and "assumed" in (source or ""), source)
+        expected = (36.0 * 1200.0) / (ASSUMED_PHONE_FOCAL_35MM * 760.0)
+        check("the assumed scale is the pinhole figure, not a magic number",
+              abs(mm_per_px - expected) < 1e-9, "%.5f mm/px" % mm_per_px)
+
+        api.store.set_calibration("global", 0.4, 760)
+        _, source2 = api._scale_for(None, 760, None, 1200)
+        check("a calibration displaces the assumption", "assumed" not in (source2 or ""),
+              source2)
+    finally:
+        shutil.rmtree(workdir, ignore_errors=True)
+
+
 def main():
     print("\n  RAAHI self-test\n  " + "-" * 60)
+    check_assumed_lens()
 
     # raahi.py carries copies of every module and web file. A stale copy is
     # the failure nobody notices until a judge runs the one-file version and
@@ -499,6 +530,53 @@ def main():
         check("a photo that already had GPS is never rewritten",
               first["geotag"]["written"] is False, first["geotag"]["why"])
 
+        # --- a photo with no lens data still gets millimetres --------------
+        #
+        # Anything sent through a chat app arrives with its metadata gone. The
+        # old build gave those readings no scale at all, which meant no growth
+        # curve and nothing on screen — the single worst thing that can happen
+        # in front of somebody trying the app for the first time.
+        scaleless = call("/api/observations", {
+            "photo_b64": base64.b64encode(bare_variant(bare, 41)).decode(),
+            "filename": "stripped_day1.png",
+            "luma32": luma32(rows, width, height),
+            "detection": {"arc_px": arc_px, "span_px": span_px,
+                          "image_width": analysis_width},
+            "manual_gps": {"lat": 21.1458, "lon": 79.0882},
+            "distance_mm": 1200, "site_name": "no lens data",
+        })
+        check("a photo with no lens data still measures in millimetres",
+              scaleless["scale"]["length_mm"] is not None,
+              scaleless["scale"]["length_mm"])
+        # Two of them, on two days, must produce a rate and a drawable series.
+        stripped_site = scaleless["site"]["id"]
+        second = call("/api/observations", {
+            "photo_b64": base64.b64encode(bare_variant(bare, 42)).decode(),
+            "filename": "stripped_day2.png",
+            "luma32": luma32(rows, width, height),
+            "detection": {"arc_px": arc_px * 1.1, "span_px": span_px,
+                          "image_width": analysis_width},
+            "site_id": stripped_site, "day_index": 2, "distance_mm": 1200,
+        })
+        check("two undated photos still give a growth rate",
+              second["site"]["growth"]["mm_per_day"] is not None,
+              second["site"]["growth"]["verdict"])
+        check("and two points to draw a chart with",
+              len(second["site"]["growth"]["series"]) == 2)
+
+        # --- a second crack, without losing the first ---------------------
+        before_sites = len(call("/api/sites")["sites"])
+        another = call("/api/observations", {
+            "luma32": luma32(rows, width, height),
+            "detection": {"arc_px": 130.0, "span_px": 120.0, "image_width": 760},
+            "manual_gps": {"lat": 21.1458, "lon": 79.0882},   # the same position
+            "new_spot": True, "site_name": "the other crack",
+        })
+        check("a different crack at the same position opens its own spot",
+              another["revisit"] is False, another["match"]["why"])
+        check("and the spots already recorded are still there",
+              len(call("/api/sites")["sites"]) == before_sites + 1)
+
         # --- deletion cleans up -------------------------------------------
         site_id = last["site"]["id"]
         call("/api/sites/" + site_id, method="DELETE")
@@ -519,6 +597,17 @@ def main():
         check("a deleted id is never reissued",
               fresh["site"]["id"] not in surviving and fresh["site"]["id"] != site_id,
               fresh["site"]["id"])
+
+        # --- starting over -------------------------------------------------
+        call("/api/calibration", {"ref_mm": 100, "ref_px": 250, "image_width": 760})
+        cleared = call("/api/records", method="DELETE")
+        empty = call("/api/state")
+        check("clearing the round removes every spot and reading",
+              empty["sites"] == 0 and empty["observations"] == 0,
+              "%d readings removed" % cleared["observations_removed"])
+        check("clearing keeps the calibration", empty["calibration"] is not None)
+        check("the seal list is empty afterwards, not broken",
+              call("/api/schedule")["rows"] == [])
 
     finally:
         server.terminate()

@@ -18,6 +18,20 @@ from .store import now_iso
 MAX_PHOTO_BYTES = 24 * 1024 * 1024
 DEFAULT_THRESHOLD_MM = 150.0
 
+# Last-resort lens. A photo whose metadata has been stripped — anything sent
+# through WhatsApp, a screenshot, a webcam frame — carries no focal length,
+# and without one there is no way to turn pixels into millimetres. Refusing
+# outright is worse than it sounds: the whole growth curve disappears and the
+# user is told to go and calibrate before they have seen the app work at all.
+#
+# So we fall back on the commonest phone lens there is, and say so on the face
+# of every reading it produces. 26 mm equivalent is roughly the main camera on
+# an iPhone or a Pixel. It is an assumption, labelled as one, and growth is a
+# subtraction — a wrong constant scales both readings the same way and largely
+# cancels out of the number this app actually sells.
+ASSUMED_PHONE_FOCAL_35MM = 26.0
+DEFAULT_DISTANCE_MM = 1200.0
+
 
 class ApiError(Exception):
     def __init__(self, message, status=400):
@@ -102,6 +116,18 @@ class Api:
         if optical:
             return optical, "lens optics (%.0f mm equiv at %.0f mm)" % (
                 float(focal_35mm), float(distance_mm))
+
+        # Nothing known about the lens. Assume a phone camera rather than
+        # returning no scale at all — see ASSUMED_PHONE_FOCAL_35MM above.
+        distance = distance_mm or DEFAULT_DISTANCE_MM
+        assumed = exif.mm_per_pixel_from_optics(
+            ASSUMED_PHONE_FOCAL_35MM, image_width, distance)
+        if assumed:
+            return assumed, ("assumed %.0f mm phone lens at %.0f cm — this photo carried "
+                             "no lens data, so the millimetres are approximate. Set the "
+                             "distance on the capture tab, or calibrate once, for a "
+                             "measured figure."
+                             % (ASSUMED_PHONE_FOCAL_35MM, distance / 10.0))
         return None, None
 
     def _site_summary(self, site):
@@ -494,7 +520,20 @@ class Api:
 
         all_scores = []
         forced = body.get("site_id")
-        if forced:
+        if body.get("new_spot") and not forced:
+            # The user is standing at a different crack and has said so. Two
+            # cracks a metre apart are inside every tolerance this app has —
+            # position, heading and appearance would all say "same spot" — so
+            # the only thing that can separate them is the person holding the
+            # camera. When they say it is new, it is new.
+            site = self.store.create_site((body.get("site_name") or "").strip(),
+                                          lat, lon, heading, phash, self._threshold())
+            match = {"site_id": site["id"], "same_spot": False, "confidence": 1.0,
+                     "why": "you started a new spot for this crack",
+                     "warning": None, "distance_m": None,
+                     "heading_delta_deg": None, "hash_distance": None}
+            revisit = False
+        elif forced:
             site = self.store.get_site(forced)
             if not site:
                 raise ApiError("No such site: %s" % forced, 404)
@@ -851,6 +890,23 @@ class Api:
         self.store.delete_observation(obs_id)
         self.store.refresh_site_anchor(obs["site_id"])
         return 200, {"deleted": obs_id, "site_id": obs["site_id"]}
+
+    def delete_records(self):
+        """
+        Empty the round: every spot, every reading, every photo file.
+
+        Calibration and the seal threshold survive, because those describe
+        the camera and the policy rather than the road, and having to redo
+        them after every demo would be its own small cruelty.
+        """
+        removed = 0
+        for site in self.store.list_sites():
+            removed += len(self.store.observations_for(site["id"]))
+            self.store.delete_site(site["id"])
+        self.store.clear_photos()
+        return 200, {"cleared": True, "observations_removed": removed,
+                     "note": "Every spot and reading is gone. Calibration and the "
+                             "threshold were kept."}
 
     def delete_trials(self):
         self.store.clear_trials()

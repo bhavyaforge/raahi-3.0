@@ -206,6 +206,8 @@ class Handler(BaseHTTPRequestHandler):
                 status, payload = API.delete_site(parts[1])
             elif len(parts) == 2 and parts[0] == "observations":
                 status, payload = API.delete_observation(int(parts[1]))
+            elif parts == ["records"]:
+                status, payload = API.delete_records()
             elif parts == ["trials"]:
                 status, payload = API.delete_trials()
             else:
