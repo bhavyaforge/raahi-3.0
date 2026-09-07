@@ -219,7 +219,9 @@ Every one of these is stated inside the app as well, on the tab where it matters
 ## What is in the app
 
 Seven tabs. The [sixteen-page walkthrough](docs/walkthrough/Reading-the-RAAHI-Prototype.pdf)
-explains each one in full, with every number named.
+explains each one in full, with every number named. For what is happening
+underneath — every algorithm, every constant, and fifty questions with answers
+ready — there is the [technical defence](docs/defence/RAAHI-Technical-Defence.pdf).
 
 | tab | what it is for |
 | --- | --- |
@@ -270,7 +272,8 @@ raahi_backend/
 
 web/app.js               crack detection in the browser
 tools/selftest.py        68 end-to-end checks
-docs/                    screenshots, a full sample run, the walkthrough
+docs/                    screenshots, a full sample run, the walkthrough,
+                         the technical defence
 ```
 
 Every module opens with a comment explaining not just what it does but why it is

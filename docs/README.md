@@ -7,7 +7,8 @@ hand, or edited afterwards.
 docs/
 ├── screenshots/     the app running, one image per screen
 ├── sample-run/      one crack, eighteen photographs — the input and the output
-└── walkthrough/     the presentation guide, as a PDF and as a web page
+├── walkthrough/     the presentation guide, as a PDF and as a web page
+└── defence/         the technical document: every algorithm and constant, defended
 ```
 
 ---
@@ -84,6 +85,29 @@ tab explained, what each number means, why it is there, how it compares to a
 survey van or a complaint app, and the questions to expect with answers ready.
 
 `reading-the-raahi-prototype.html` is the same content as a web page.
+
+---
+
+## defence/
+
+`RAAHI-Technical-Defence.pdf` — thirty-five pages, A4, fonts embedded. The
+walkthrough explains what the screens say; this explains what the code does.
+
+Nine parts, written for the reviewer who does not take a claim on trust:
+
+| part | what it settles |
+| --- | --- |
+| 1 | The claim, in one page |
+| 2 | Image processing — threshold sweep, morphological opening, connected components, the four shape gates, and the false positives it is honest about |
+| 3 | GPS — the EXIF tags byte by byte, reading them, writing them, and why position alone is never allowed to decide that two photographs are the same crack |
+| 4 | Pixels into millimetres — the pinhole model, the four-rung fallback ladder, the bias-cancellation argument, and the error budget |
+| 5 | Growth — least squares, R², the confidence interval on the slope, and how a rate becomes a date |
+| 6 | The priority formula, term by term, with every assumption named |
+| 7 | The backend — one upload traced through twenty steps, the schema, content-addressed storage, and the endpoint table |
+| 8 | What changes between this laptop and a truck: motion blur, bandwidth, retention, DPDP |
+| 9 | Fifty questions with answers ready, the hostile ones included |
+
+`raahi-technical-defence.html` is the same content as a web page.
 
 ---
 

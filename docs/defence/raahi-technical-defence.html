@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RAAHI Technical Defence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=Source+Serif+4:ital,wght@0,400;0,600;1,400&amp;display=swap" rel="stylesheet">
+<style>
+
+:root{
+  --paper:#F4F3EF; --sheet:#FFFFFF; --sunk:#EDEBE5;
+  --ink:#17181C; --body:#33343A; --dim:#65656A; --faint:#918F89;
+  --rule:#DEDBD3; --rule-hard:#C4C0B6;
+  --blue:#1F5183; --blue-soft:#E5EDF5;
+  --red:#A32F23; --red-soft:#F7E4E0;
+  --amber:#835309; --amber-soft:#F8EDD9;
+  --green:#1C6539; --green-soft:#E1EFE6;
+  --code:#F1EFE9;
+}
+*{box-sizing:border-box}
+body{background:var(--paper); color:var(--body);
+  font-family:"Source Serif 4",Georgia,"Times New Roman",serif;
+  font-size:10.4pt; line-height:1.62; margin:0; -webkit-font-smoothing:antialiased}
+.wrap{max-width:1000px;margin:0 auto;padding:0 26px 70px}
+h1,h2,h3,h4,.lab,.eyebrow,th,.partnum,figcaption{font-family:Archivo,"Helvetica Neue",Arial,sans-serif}
+.mono,code,pre,.num,td.mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  font-variant-numeric:tabular-nums}
+
+/* ---- cover ---- */
+.cover{padding:70px 0 30px;border-bottom:2.5px solid var(--ink);margin-bottom:34px}
+.eyebrow{font-size:10.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--blue);margin-bottom:20px}
+h1{font-size:46px;line-height:1.02;font-weight:800;letter-spacing:-.025em;color:var(--ink);
+  margin:0 0 18px;text-wrap:balance}
+.standfirst{font-size:15pt;line-height:1.5;color:var(--dim);margin:0;max-width:60ch}
+.coverfoot{margin-top:26px;font-size:11px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--faint);font-family:Archivo,sans-serif;font-weight:600}
+
+/* ---- parts & headings ---- */
+.part{border-top:2.5px solid var(--ink);padding-top:14px;margin:0 0 26px}
+.partnum{font-size:10.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--blue);margin-bottom:8px}
+h2{font-size:25px;font-weight:700;letter-spacing:-.017em;color:var(--ink);margin:0 0 6px;
+  text-wrap:balance}
+.partsub{font-size:12pt;color:var(--dim);margin:0 0 20px;max-width:64ch}
+h3{font-size:15.5px;font-weight:700;color:var(--ink);margin:30px 0 9px;letter-spacing:-.008em}
+h4{font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--faint);margin:22px 0 8px}
+p{margin:0 0 13px;max-width:74ch}
+strong{color:var(--ink);font-weight:600}
+ul,ol{margin:0 0 14px;padding-left:20px;max-width:74ch}
+li{margin-bottom:6px}
+a{color:var(--blue)}
+
+/* ---- contents ---- */
+nav.toc{background:var(--sunk);border:1px solid var(--rule);padding:22px 26px;margin-bottom:40px}
+nav.toc .lab{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);
+  font-weight:700;margin-bottom:14px}
+nav.toc ol{list-style:none;margin:0;padding:0;columns:2;column-gap:34px}
+nav.toc li{break-inside:avoid;margin-bottom:5px}
+nav.toc a{text-decoration:none;color:var(--body);font-size:12.5px;display:flex;gap:11px}
+nav.toc a b{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--faint);font-weight:500}
+
+/* ---- code & pipelines ---- */
+pre{background:var(--code);border:1px solid var(--rule);border-left:3px solid var(--blue);
+  padding:13px 16px;font-size:9.3pt;line-height:1.55;overflow-x:auto;margin:16px 0;
+  color:var(--ink);white-space:pre}
+code{background:var(--code);padding:1px 4px;font-size:9.6pt;color:var(--ink)}
+pre code{background:none;padding:0;font-size:inherit}
+
+/* the maths, set apart */
+.eqn{background:var(--sheet);border:1px solid var(--rule);padding:16px 20px;margin:16px 0;
+  text-align:center}
+.eqn .f{font-family:"IBM Plex Mono",monospace;font-size:12.5pt;color:var(--ink);font-weight:500}
+.eqn .w{margin-top:9px;font-size:9.6pt;color:var(--dim);line-height:1.5}
+
+/* numbered pipeline steps — the content really is a sequence */
+.steps{counter-reset:st;margin:18px 0}
+.step{counter-increment:st;position:relative;padding:0 0 16px 44px;border-left:1px solid var(--rule);
+  margin-left:13px}
+.step:last-child{border-left-color:transparent}
+.step::before{content:counter(st);position:absolute;left:-13px;top:0;width:26px;height:26px;
+  border-radius:50%;background:var(--blue);color:#fff;font-family:Archivo,sans-serif;
+  font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.step h4{margin:3px 0 6px;color:var(--ink);font-size:12.5px;letter-spacing:0;text-transform:none}
+.step p{margin-bottom:8px;font-size:10.1pt}
+
+/* ---- tables ---- */
+.scroll{overflow-x:auto;margin:17px 0;border:1px solid var(--rule);background:var(--sheet)}
+table{border-collapse:collapse;width:100%;font-size:9.6pt}
+th{font-size:9px;letter-spacing:.11em;text-transform:uppercase;color:var(--faint);text-align:left;
+  padding:9px 13px;border-bottom:1px solid var(--rule-hard);font-weight:700;background:var(--sunk);
+  vertical-align:bottom}
+td{padding:9px 13px;border-bottom:1px solid var(--rule);vertical-align:top}
+tr:last-child td{border-bottom:none}
+td.mono{font-size:9pt;color:var(--ink)}
+td b{color:var(--ink)}
+.ok{color:var(--green);font-weight:600}
+.no{color:var(--red);font-weight:600}
+
+/* ---- callouts ---- */
+.note{border-left:3px solid var(--blue);background:var(--blue-soft);padding:13px 17px;margin:17px 0;
+  font-size:10.1pt;max-width:76ch}
+.note.warn{border-left-color:var(--amber);background:var(--amber-soft)}
+.note.bad{border-left-color:var(--red);background:var(--red-soft)}
+.note.good{border-left-color:var(--green);background:var(--green-soft)}
+.note .h{font-family:Archivo,sans-serif;font-weight:700;font-size:10px;letter-spacing:.12em;
+  text-transform:uppercase;margin-bottom:6px;color:var(--blue)}
+.note.warn .h{color:var(--amber)} .note.bad .h{color:var(--red)} .note.good .h{color:var(--green)}
+.note p:last-child{margin-bottom:0}
+
+/* ---- the question bank ---- */
+.qa{border-top:1px solid var(--rule-hard);padding:14px 0;break-inside:avoid;page-break-inside:avoid}
+.qa .q{font-family:Archivo,sans-serif;font-weight:700;font-size:12px;color:var(--ink);
+  margin-bottom:7px;display:flex;gap:11px}
+.qa .q i{font-style:normal;color:var(--red);font-family:"IBM Plex Mono",monospace;font-size:11px;
+  flex:0 0 auto}
+.qa .a{font-size:10.1pt;max-width:78ch}
+.qa .a p{margin-bottom:8px}
+.qa .a p:last-child{margin-bottom:0}
+
+/* ---- readout rows ---- */
+.rows{border:1px solid var(--rule);background:var(--sheet);margin:16px 0}
+.rows>div{display:grid;grid-template-columns:minmax(160px,auto) 1fr;gap:5px 20px;padding:9px 15px;
+  border-bottom:1px solid var(--rule);align-items:baseline}
+.rows>div:last-child{border-bottom:none}
+.rows .k{font-family:"IBM Plex Mono",monospace;font-size:9pt;color:var(--faint)}
+.rows .v{font-family:"IBM Plex Mono",monospace;font-size:10pt;color:var(--ink);font-weight:500}
+.rows .v em{font-style:normal;font-family:"Source Serif 4",serif;font-size:9.8pt;color:var(--dim);
+  display:block;margin-top:3px;line-height:1.5}
+
+figure{margin:18px 0}
+figure img{width:100%;border:1px solid var(--rule);display:block}
+figcaption{font-size:9pt;color:var(--faint);margin-top:7px;letter-spacing:.01em}
+
+@media print{
+  @page{size:A4;margin:15mm 14mm 17mm}
+  body{background:#fff}
+  .wrap{max-width:none;padding:0}
+  .part{break-before:page;page-break-before:always}
+  .cover,nav.toc,#p1.part{break-before:auto;page-break-before:auto}
+  nav.toc{break-after:page;page-break-after:always}
+  h2,h3,h4{break-after:avoid;page-break-after:avoid}
+  pre,.eqn,.note,.rows,.scroll,table,tr,.step,.qa,figure{break-inside:avoid;page-break-inside:avoid}
+  .scroll{overflow:visible}
+  p,ul,ol,.note,.qa .a{max-width:none}
+  a{color:var(--blue);text-decoration:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="cover">
+  <div class="eyebrow">RAAHI · Team Innovators · SIH26198 · Technical defence</div>
+  <h1>How the prototype actually works</h1>
+  <p class="standfirst">Every algorithm, constant and design decision in the build —
+     written for the reviewer who wants to know what is really happening between the
+     photograph and the sealing date, and for the person who has to answer them.</p>
+  <div class="coverfoot">Nine parts · fifty questions answered · every figure taken from a real run</div>
+</header>
+
+<nav class="toc">
+  <div class="lab">Contents</div>
+  <ol>
+    <li><a href="#p1"><b>1</b>The claim, in one page</a></li>
+    <li><a href="#p2"><b>2</b>Image processing: finding the crack</a></li>
+    <li><a href="#p3"><b>3</b>GPS: reading it, writing it, not trusting it</a></li>
+    <li><a href="#p4"><b>4</b>Pixels into millimetres</a></li>
+    <li><a href="#p5"><b>5</b>Growth, lead time and the statistics</a></li>
+    <li><a href="#p6"><b>6</b>The priority formula</a></li>
+    <li><a href="#p7"><b>7</b>Backend architecture</a></li>
+    <li><a href="#p8"><b>8</b>From this laptop to a truck</a></li>
+    <li><a href="#p9"><b>9</b>Fifty questions, answered</a></li>
+  </ol>
+</nav>
+
+<!-- ============================================================ PART 1 -->
+<section class="part" id="p1">
+  <div class="partnum">Part one</div>
+  <h2>The claim, in one page</h2>
+  <p class="partsub">What the prototype does, and the single sentence everything else
+     in this document exists to support.</p>
+
+  <p>Sealing a crack costs a fraction of patching the pothole it becomes, and the
+     evidence for that has been settled since the 1990s. The reason Indian municipalities
+     cannot act on it is not ignorance and not budget — it is <strong>timing</strong>. A crack
+     photographed once is a defect with no date attached.</p>
+
+  <p>RAAHI photographs the same square metre of road on successive mornings, measures the
+     crack each time, fits a growth rate through the measurements, and turns that rate
+     into a date. Three things have to work for that to be true, and the rest of this
+     document is those three things in detail:</p>
+
+  <div class="steps">
+    <div class="step">
+      <h4>Find and measure the crack in one photograph</h4>
+      <p>Classical image processing in the browser — threshold, morphological opening,
+         connected components, and four shape gates that separate a crack from road
+         speckle. Part two.</p>
+    </div>
+    <div class="step">
+      <h4>Recognise that it is the same crack tomorrow</h4>
+      <p>GPS is accurate to about ± 5 m and two cracks four metres apart are different
+         cracks, so position alone cannot do it. Three independent signals vote. Part three.</p>
+    </div>
+    <div class="step">
+      <h4>Turn a sequence of measurements into a decision</h4>
+      <p>Least-squares fit, a confidence interval on the slope, a threshold crossing date,
+         and a priority that accounts for the rain and the traffic the crack actually
+         faces. Parts four to six.</p>
+    </div>
+  </div>
+
+  <h3>The numbers this document keeps returning to</h3>
+  <p>Everything below comes from one real run: eighteen photographs of one crack over
+     seventeen days, uploaded through the browser, committed in the repository at
+     <code>docs/sample-run/</code> with the input images beside the output JSON.</p>
+
+  <div class="rows">
+    <div><span class="k">readings</span><span class="v">18 over 17.01 days</span></div>
+    <div><span class="k">measured</span><span class="v">110.1 mm → 134.3 mm &nbsp; (+24.2 mm)</span></div>
+    <div><span class="k">growth rate</span><span class="v">1.392 ± 0.057 mm/day
+      <em>95% confidence interval 1.271 to 1.513 mm/day</em></span></div>
+    <div><span class="k">fit quality</span><span class="v">R² 0.974 &nbsp; RMSE 1.18 mm
+      <em>largest single residual 2.57 mm</em></span></div>
+    <div><span class="k">threshold</span><span class="v">150 mm (adjustable)</span></div>
+    <div><span class="k">crossing</span><span class="v">11.3 days
+      <em>10.4 to 12.4 days across the confidence interval</em></span></div>
+    <div><span class="k">lead time</span><span class="v">28.3 days
+      <em>first sighting to predicted failure</em></span></div>
+    <div><span class="k">priority</span><span class="v">1.392 × 2.17 × 1.00 = 3.016 → 77 URGENT</span></div>
+  </div>
+
+  <div class="note good">
+    <div class="h">The sentence to defend</div>
+    <p><strong>Detecting a crack in one photograph is a solved problem and we claim no
+       improvement on it. Measuring how fast the same crack is growing requires returning
+       to the same metre of road for weeks, which no survey van, satellite or complaint
+       app can do — and which a municipal waste fleet already does, every morning, for
+       free.</strong></p>
+  </div>
+</section>
+
+<!-- ============================================================ PART 2 -->
+<section class="part" id="p2">
+  <div class="partnum">Part two</div>
+  <h2>Image processing: finding the crack</h2>
+  <p class="partsub">Seven stages, all running in the browser, with the exact constants
+     and the reason each one is there.</p>
+
+  <h3>2.1 Why classical vision and not a neural network</h3>
+  <p>This will be the first question, so it is answered first. The prototype uses
+     thresholding, morphology and connected components — <strong>not</strong> a trained model.
+     That is a deliberate choice for this stage, and the reasons are specific:</p>
+
+  <ul>
+    <li><strong>The measurement, not the detection, is the contribution.</strong> A model
+        would give a bounding box. This project needs a <em>traced length in millimetres</em>,
+        which a box does not provide.</li>
+    <li><strong>It is auditable.</strong> Every step below can be checked by hand on a
+        single photograph. A reviewer can disagree with a number and see exactly which
+        line produced it. A network's failure is a black box.</li>
+    <li><strong>It runs anywhere with nothing installed.</strong> The whole prototype is
+        Python's standard library plus browser JavaScript. No CUDA, no PyTorch, no model
+        weights to ship.</li>
+    <li><strong>It does not need training data we have not earned.</strong> Quoting a mAP
+        from someone else's paper is not a result.</li>
+  </ul>
+
+  <p>The production path is a TFLite detector fine-tuned on RDD2022 running on the phone,
+     with this geometry stage taking its output. Part eight describes that handover. The
+     stages below do not change — they run on a cropped region instead of a whole frame.</p>
+
+  <h3>2.2 The pipeline</h3>
+
+  <div class="steps">
+    <div class="step">
+      <h4>Downscale to a working width of 760 px</h4>
+      <p>A 12-megapixel phone photograph is 4000 px wide. Processing it whole costs
+         sixteen times the work for no gain: a crack is a large feature and survives the
+         reduction, while sensor noise — which is per-pixel — is averaged away by the
+         browser's area-based resampling. 760 px is wide enough that a 3 mm crack at 1.2 m
+         is still two to three pixels across.</p>
+      <p>Everything downstream, including the scale calculation, uses this width. That
+         consistency matters: change the working width and the millimetres change with it,
+         which is why the width is stored with every reading.</p>
+    </div>
+
+    <div class="step">
+      <h4>Convert to greyscale, ITU-R BT.601 weights</h4>
+      <pre>gray = 0.299·R + 0.587·G + 0.114·B</pre>
+      <p>These are the luminance coefficients: the eye is most sensitive to green, least
+         to blue. A plain average of the channels would let a blue-tinted shadow read as
+         darker than it looks, and shadows are the main false positive on a road.</p>
+      <p>The mean of the whole greyscale frame is kept as <code>sceneMean</code>. It is used
+         in stage six to measure how much darker a candidate is than the road around it.</p>
+    </div>
+
+    <div class="step">
+      <h4>Threshold — swept, not fixed</h4>
+      <p>A pixel is marked when <code>gray &lt; threshold</code>. But the correct threshold on
+         wet tarmac at 7 a.m. is not the correct threshold on dry tarmac at 9 a.m., so a
+         fixed number is useless in the field.</p>
+      <p>The app sweeps <strong>threshold 70 to 180 in steps of 10</strong> — twelve full passes
+         of the pipeline — and keeps the one whose winning candidate has the highest
+         <em>merit</em>:</p>
+      <pre>merit = contrast × (span ÷ image diagonal)</pre>
+      <p>Contrast times reach. Raising a threshold always finds more dark pixels, so the
+         naive "most pixels found" criterion returns the whole photograph at threshold 180.
+         Merit does not: a huge dark blob has near-zero contrast against the scene mean,
+         and scores badly. Only settings that leave something crack-<em>shaped</em> behind are
+         considered at all.</p>
+    </div>
+
+    <div class="step">
+      <h4>Morphological opening — dilate 3×3, then erode 3×3</h4>
+      <p>An asphalt surface is aggregate: thousands of small dark specks that cross any
+         threshold a crack crosses. Opening removes them.</p>
+      <p><strong>Dilate</strong> sets a pixel if any of its 3×3 neighbours is set. Isolated
+         specks grow slightly; the crack, being continuous, also grows and its small gaps
+         close. <strong>Erode</strong> then clears a pixel unless all of its 3×3 neighbourhood is
+         set. Specks — now isolated blobs a few pixels across — vanish entirely. The crack,
+         which is long and connected, survives at close to its original width.</p>
+      <p>The order matters. Erode-then-dilate (a <em>closing</em>) would do the opposite: fill
+         the gaps and keep the speckle.</p>
+    </div>
+
+    <div class="step">
+      <h4>Connected components, 8-connectivity, iterative flood fill</h4>
+      <p>Every surviving pixel is assigned to a blob. The fill is 8-connected — diagonal
+         neighbours count — because a crack running at 30° to the pixel grid is a staircase
+         of diagonal steps, and 4-connectivity would chop it into fragments.</p>
+      <p>It is written with an explicit <code>Int32Array</code> stack rather than recursion. A
+         crack can span a thousand pixels and recursive flood fill would overflow the
+         JavaScript call stack on a large photograph.</p>
+      <p>For each blob the pass records area, bounding box, centroid, and the pixel list.
+         Blobs under <strong>180 px</strong> are discarded immediately.</p>
+    </div>
+
+    <div class="step">
+      <h4>Score every candidate on four shape properties</h4>
+      <p>This is where a crack is separated from everything else dark in the frame. Four
+         gates, described in the table below, and a ranking score.</p>
+    </div>
+
+    <div class="step">
+      <h4>Measure the winner: arc length = perimeter ÷ 2</h4>
+      <p>A boundary pixel is one on the frame edge or with at least one unset 4-neighbour.
+         Counting them gives the perimeter. For a long thin shape the perimeter is
+         approximately twice the length — once up one side, once back down the other — so
+         half the perimeter is the traced length <em>along the crack</em>, following every bend.</p>
+      <p>This is the key measurement, and it is why the app reports a longer figure than a
+         straight-line ruler would: a crack that wanders is longer than the distance
+         between its endpoints.</p>
+    </div>
+  </div>
+
+  <h3>2.3 The four gates, exactly</h3>
+  <p>A candidate is marked <code>plausible</code> only if it passes all four. Failing does not
+     delete it — it drops below the plausible ones in the ranking and is still reachable
+     through <em>Wrong shape? Next candidate</em>.</p>
+
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Gate</th><th>Test</th><th>What it rejects</th></tr></thead>
+      <tbody>
+        <tr><td><b>Not too big</b></td><td class="mono">area / (W·H) &lt; 0.06</td>
+            <td>A whole shadowed half of the frame. A crack is a line, not a region — it
+                never covers 6% of a photograph.</td></tr>
+        <tr><td><b>Not too tangled</b></td><td class="mono">arcLength / span &lt; 4.5</td>
+            <td>Scattered speckle that survived the opening. A real crack wanders, but its
+                traced length is never more than four and a half times the straight-line
+                distance across it.</td></tr>
+        <tr><td><b>Long enough</b></td><td class="mono">span &gt; 0.06 · diagonal</td>
+            <td>A stone, a leaf, a bolt head. Anything that does not reach across a
+                meaningful fraction of the frame.</td></tr>
+        <tr><td><b>Solid enough</b></td><td class="mono">area &gt; 220 px</td>
+            <td>A thin scratch on the lens or a two-pixel artefact.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>The ranking score</h4>
+  <div class="eqn">
+    <div class="f">score = (P² / A) × 1/(1 + 3.2·offset) × (0.18 if it touches the border)</div>
+    <div class="w">P = perimeter, A = area, offset = distance of the centroid from frame
+      centre ÷ diagonal</div>
+  </div>
+  <p><strong>P²/A is thinness.</strong> For a circle it is 4π ≈ 12.6, its minimum. For a long
+     thin line it is large. It is the classical isoperimetric measure and it is
+     scale-invariant, which matters because the same crack photographed from 1 m and from
+     1.5 m must score alike.</p>
+  <p><strong>The centre bias</strong> reflects how somebody photographs a crack: they point at
+     it. A blob at the edge of the frame is more likely to be a kerb or a shadow.</p>
+  <p><strong>The border penalty (×0.18)</strong> is the strongest single term. A shape running
+     off the edge of the frame has been cut by the frame, so its length is unknowable —
+     and measuring an unknowable length is worse than measuring the wrong thing.</p>
+
+  <h4>Final ordering</h4>
+  <pre>sort by:  plausible first
+          then contrast × span      (dark and long beats faint and long)
+          then score                (thinness, with the centre and border terms)</pre>
+  <p>Contrast is the mean darkness of the blob measured against the scene mean, normalised:
+     <code>(sceneMean − meanOfBlob) / 255</code>. A crack is a hole in the surface and reads far
+     darker than the road. Speckle that only just crossed the threshold barely differs
+     from its surroundings, and this term demotes it.</p>
+
+  <h3>2.4 A worked example</h3>
+  <p>Day one of the committed run, 900 × 640 px:</p>
+  <div class="rows">
+    <div><span class="k">source</span><span class="v">900 × 640 px</span></div>
+    <div><span class="k">working size</span><span class="v">760 × 540 px &nbsp; (scale 0.844)</span></div>
+    <div><span class="k">threshold chosen</span><span class="v">by sweep, on merit</span></div>
+    <div><span class="k">blob area</span><span class="v">≈ 400 px after opening</span></div>
+    <div><span class="k">perimeter</span><span class="v">≈ 310 px</span></div>
+    <div><span class="k">arc length</span><span class="v">155 px &nbsp; (perimeter ÷ 2)</span></div>
+    <div><span class="k">scale</span><span class="v">0.7105 mm/px &nbsp; (see part four)</span></div>
+    <div><span class="k">reported</span><span class="v">110.1 mm</span></div>
+  </div>
+
+  <h3>2.5 What breaks it — stated, not discovered</h3>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Condition</th><th>Effect</th><th>Handling</th></tr></thead>
+      <tbody>
+        <tr><td>Hard shadow across the crack</td><td>Shadow edge may be darker than the crack</td>
+            <td class="mono">contrast × span demotes it; the operator can cycle candidates</td></tr>
+        <tr><td>Wet road</td><td>Whole surface darkens; contrast falls</td>
+            <td class="mono">threshold sweep adapts; the scene fingerprint flags the change</td></tr>
+        <tr><td>Painted lane marking</td><td>A long thin bright shape</td>
+            <td class="mono">never crosses a darkness threshold — bright, not dark</td></tr>
+        <tr><td>Tar patch / crack sealant</td><td>Long, thin, very dark</td>
+            <td class="no">genuine false positive. See the persistence rule, part eight</td></tr>
+        <tr><td>Motion blur</td><td>Crack smears; area rises, contrast falls</td>
+            <td class="mono">usually fails the tangle or size gate and is reported as implausible</td></tr>
+        <tr><td>Night / headlights</td><td>Specular highlights, deep shadow</td>
+            <td class="no">out of scope. Daylight only, stated on the overview tab</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note warn">
+    <div class="h">The honest weakness</div>
+    <p>A <strong>tar patch or an old sealant line</strong> is long, thin and very dark. Geometry
+       alone cannot distinguish it from a crack, and the prototype does not. The answer is
+       not a better shape test — it is <em>time</em>: a sealant line is present on day one and
+       never grows, while a crack appears and lengthens. That rule needs the repeat-visit
+       data this project is built to collect, and it is described in part eight.</p>
+  </div>
+</section>
+
+<!-- ============================================================ PART 3 -->
+<section class="part" id="p3">
+  <div class="partnum">Part three</div>
+  <h2>GPS: reading it, writing it, and not trusting it alone</h2>
+  <p class="partsub">Where the coordinates come from, how they are parsed byte by byte,
+     and why the whole project would fail if it relied on them.</p>
+
+  <h3>3.1 What is actually in the file</h3>
+  <p>A camera with location enabled writes the fix into the image file itself, in a
+     structure called <strong>EXIF</strong> — an embedded TIFF directory. It is not a sidecar file
+     and not a database entry: it is inside the photograph.</p>
+  <p>These are the tags RAAHI reads, with real values from day one of the committed run:</p>
+
+  <div class="scroll">
+    <table>
+      <thead><tr><th>EXIF tag</th><th>Hex</th><th>Value</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">GPSLatitude</td><td class="mono">0x0002</td><td class="mono">28.613969° N</td>
+            <td>Three rationals: degrees, minutes, seconds</td></tr>
+        <tr><td class="mono">GPSLongitude</td><td class="mono">0x0004</td><td class="mono">77.209064° E</td>
+            <td>Same form; the ref tag carries N/S and E/W</td></tr>
+        <tr><td class="mono">GPSAltitude</td><td class="mono">0x0006</td><td class="mono">216.0 m</td>
+            <td>With a ref byte for above/below sea level</td></tr>
+        <tr><td class="mono">GPSImgDirection</td><td class="mono">0x0011</td><td class="mono">98.68°</td>
+            <td>Which way the camera pointed. Central to matching</td></tr>
+        <tr><td class="mono">GPSHPositioningError</td><td class="mono">0x001F</td><td class="mono">± 4.5 m</td>
+            <td>The device's own estimate of its error</td></tr>
+        <tr><td class="mono">GPSTimeStamp / DateStamp</td><td class="mono">0x0007 / 0x001D</td>
+            <td class="mono">06:52:00 UTC</td><td>Satellite clock, always UTC</td></tr>
+        <tr><td class="mono">DateTimeOriginal</td><td class="mono">0x9003</td><td class="mono">2026-08-21 06:52</td>
+            <td>Shutter time. <b>This dates the reading</b></td></tr>
+        <tr><td class="mono">FocalLengthIn35mmFilm</td><td class="mono">0xA405</td><td class="mono">80 mm</td>
+            <td>The lens. This is what makes millimetres possible</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>3.2 How the parser works</h3>
+  <p><code>raahi_backend/exif.py</code> is a hand-written TIFF reader — about 260 lines, no
+     dependencies. The walk is:</p>
+
+  <pre>1  Locate the TIFF header inside the container
+     JPEG  walk segment by segment to the APP1 marker (0xFFE1) tagged "Exif\0\0"
+     PNG   walk chunk by chunk to the eXIf chunk
+     HEIC  scan for the "Exif\0\0" signature
+
+2  Read the byte order: "II" little-endian or "MM" big-endian, then magic 42
+
+3  Read IFD0 — the main directory. Each entry is 12 bytes:
+     tag (2) | format (2) | component count (4) | value or offset (4)
+   Values of 4 bytes or fewer sit inline; longer ones are an offset into the block
+
+4  Follow the pointers: 0x8769 to the Exif sub-IFD, 0x8825 to the GPS sub-IFD
+
+5  Convert
+     degrees/minutes/seconds + N/S/E/W  ->  signed decimal degrees
+     "2026:08:21 06:52:00"              ->  ISO-8601</pre>
+
+  <div class="note">
+    <div class="h">Why write a parser rather than import one</div>
+    <p>The whole app must run with <code>python3 raahi.py</code> and nothing installed — no pip,
+       no internet, on a municipal laptop. That constraint is worth about 260 lines. A
+       malformed file returns an empty result rather than raising: a photograph with no GPS
+       is a normal case, not an error.</p>
+  </div>
+
+  <h3>3.3 Writing GPS into a photograph</h3>
+  <p>A frame that arrives with no metadata — anything through a chat app, a screenshot, a
+     webcam capture — carries no position. Rather than keep the coordinates only in the
+     database, <code>geotag.py</code> writes them <em>into the file</em> as it is stored: it builds a
+     complete little-endian TIFF block (IFD0 → Exif IFD + GPS IFD, offsets computed in a
+     layout pass before the bytes are emitted) and inserts it as a JPEG APP1 segment or a
+     PNG <code>eXIf</code> chunk.</p>
+  <p>Afterwards the photograph carries its own coordinates. Copy it anywhere, open it in
+     any EXIF viewer, and they are there — the record and the pixels cannot drift apart,
+     which is what matters if a repair bill is ever disputed.</p>
+  <p><strong>A photo that arrived with its own GPS is never rewritten.</strong> The camera's word
+     beats ours, and the interface says which of the two happened.</p>
+
+  <h3>3.4 Precision is not accuracy</h3>
+  <div class="eqn">
+    <div class="f">1e-6° of latitude ≈ 11 cm &nbsp;&nbsp;·&nbsp;&nbsp; stated error ± 4.5 m</div>
+    <div class="w">The coordinate is written to centimetre precision and known to about
+      five metres. The app shows both, always.</div>
+  </div>
+  <p>Six decimals looks authoritative and is not. Consumer GPS under open sky is good to
+     roughly 3–5 m; near buildings, multipath pushes it to 10 m or worse. This is the
+     single most important limitation in the project, and the design assumes it rather
+     than hoping about it.</p>
+
+  <h3>3.5 Three signals, because one is not enough</h3>
+  <p>Two cracks four metres apart are different cracks. A ± 5 m fix cannot separate them.
+     So the revisit decision is a vote:</p>
+
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Signal</th><th>Computation</th><th>Tolerance</th><th>Rules out</th></tr></thead>
+      <tbody>
+        <tr><td><b>Distance</b></td><td class="mono">haversine, R = 6 371 008.8 m</td>
+            <td class="mono">15 m</td><td>A different street</td></tr>
+        <tr><td><b>Heading</b></td><td class="mono">smallest circular difference</td>
+            <td class="mono">45°</td><td>Standing still, photographing the opposite kerb</td></tr>
+        <tr><td><b>Appearance</b></td><td class="mono">64-bit difference hash</td>
+            <td class="mono">≤ 12 of 64 bits</td><td>Everything else — and works with no GPS at all</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="eqn">
+    <div class="f">same spot  ⟺  (distance ≤ 15 m ∧ heading ≤ 45°) &nbsp; ∨ &nbsp; (hash ≤ 7 bits ∧ position not contradicting)</div>
+    <div class="w">Two independent routes. The second is what lets a photograph with no GPS
+      at all still find its own history.</div>
+  </div>
+
+  <p><strong>Why 15 m and not 5 m.</strong> The tolerance has to exceed the error of the
+     measurement, or genuine revisits are rejected. Two fixes each good to ± 5 m can differ
+     by 10 m while describing the same point. 15 m accepts that; the heading and appearance
+     terms carry the discrimination that the loosened radius gives up.</p>
+
+  <p><strong>Why heading matters more than it looks.</strong> A person standing on a kerb can
+     photograph the road to their left or the footpath to their right without moving.
+     Position is identical; the crack is not. GPSImgDirection separates the two cases and
+     nothing else in the sensor set can.</p>
+
+  <h3>3.6 The scene fingerprint, in detail</h3>
+  <p>A <strong>difference hash</strong>. The browser sends a 32 × 32 luminance grid; the server
+     box-averages it to 9 × 8 and emits one bit per horizontal neighbour pair:</p>
+  <pre>for each of 8 rows:
+    for each of 8 columns:
+        bit = 1 if cell[row][col] &gt; cell[row][col+1] else 0
+→ 64 bits, stored as 16 hex characters</pre>
+
+  <p>The comparison is <strong>Hamming distance</strong> — how many of the 64 bits differ.</p>
+
+  <div class="note good">
+    <div class="h">Why a difference hash and not an average hash</div>
+    <p>An average hash compares each cell to the image mean, so a uniform brightness shift
+       flips many bits at once — and brightness is exactly what changes between a 7 a.m.
+       and a 9 a.m. pass. A difference hash compares <em>neighbour to neighbour</em>. Add 20 to
+       every pixel and every comparison gives the same answer. It is invariant to exposure
+       and to linear contrast change, while remaining sensitive to the layout of the scene.</p>
+    <p><strong>Measured:</strong> across the eighteen demo passes, deliberately rendered at
+       exposures spanning 28 grey levels, the fingerprint never differed from day one by
+       more than <strong>2 bits of 64</strong> — against a matching gate of 12.</p>
+  </div>
+
+  <h3>3.7 The two thresholds</h3>
+  <p><strong>12 of 64</strong> means the scene matches. <strong>7 of 64</strong> is "unmistakable" — strong
+     enough to carry the decision on its own when there is no GPS at all. 64 bits gives 2⁶⁴
+     possible hashes; agreeing within 7 by chance is vanishingly unlikely for unrelated
+     road scenes, while leaving room for rain, a leaf, a parked wheel.</p>
+
+  <h3>3.8 When the signals disagree</h3>
+  <p>Position matching while appearance does not is <strong>reported, not silently accepted</strong>:</p>
+  <div class="note warn">
+    <div class="h">Shown on screen</div>
+    <p>"The position matches but the scene does not. If this is a different crack nearby,
+       set the spot by hand before saving."</p>
+  </div>
+  <p>Usually it is the light or a wet road. Sometimes it is a different crack two metres
+     over. The system does not know which, so it says so and offers the override. Every
+     match, agreeing or not, prints its own reasoning:</p>
+  <div class="note">
+    <p class="mono">1.2 m from the recorded position; camera pointing within 4 deg of before;
+       scene matches (1/64 bits differ)</p>
+  </div>
+
+  <h3>3.9 The anchor improves with use</h3>
+  <p>After every pass the spot is re-centred on the arithmetic mean of its own fixes, and
+     its heading on the <em>circular</em> mean — 350° and 10° average to 0°, not to 180°. With
+     n independent fixes the standard error of the mean falls as 1/√n, so the recorded
+     position of an eighteen-pass spot is roughly four times better than a single fix.
+     Tomorrow's match is tighter than today's.</p>
+</section>
+
+<!-- ============================================================ PART 4 -->
+<section class="part" id="p4">
+  <div class="partnum">Part four</div>
+  <h2>Pixels into millimetres</h2>
+  <p class="partsub">The optics, the four-rung fallback ladder, and the argument that
+     makes the whole measurement defensible.</p>
+
+  <h3>4.1 The pinhole model</h3>
+  <p>A 35 mm-equivalent focal length is defined against a 36 mm-wide frame. By similar
+     triangles, a lens of equivalent focal length <em>f</em> at distance <em>d</em> covers a ground
+     width of 36·d/f. Divide by the pixel width and one pixel is:</p>
+
+  <div class="eqn">
+    <div class="f">mm per pixel = (36 × distance<sub>mm</sub>) ÷ (focal<sub>35mm</sub> × image width<sub>px</sub>)</div>
+    <div class="w">No reference object in the frame. No ruler. Just the lens and the
+      shooting distance.</div>
+  </div>
+
+  <p>Worked, for the committed run:</p>
+  <pre>focal 80 mm equivalent, distance 1200 mm, working width 760 px
+
+  36 × 1200          43 200
+  ───────────  =  ───────────  =  0.7105 mm per pixel
+   80 × 760          60 800
+
+  day 1:  155 px × 0.7105 = 110.1 mm      ✓ matches the stored reading</pre>
+
+  <h3>4.2 The ladder</h3>
+  <p>Four sources, best first. <strong>Every reading records which rung it used</strong> and the
+     interface prints it.</p>
+
+  <div class="scroll">
+    <table>
+      <thead><tr><th>#</th><th>Source</th><th>Accuracy</th><th>When</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><b>Calibration at this spot</b><br>ruler measured at that location</td>
+            <td class="ok">best</td><td>If somebody has calibrated there</td></tr>
+        <tr><td>2</td><td><b>Global calibration</b><br>rescaled if the photo is a different width</td>
+            <td class="ok">good</td><td>Same camera and distance as the calibration</td></tr>
+        <tr><td>3</td><td><b>Lens optics</b><br>focal length from EXIF × stated distance</td>
+            <td>fair</td><td>Any phone photograph with metadata intact</td></tr>
+        <tr><td>4</td><td><b>Assumed 26 mm phone lens</b><br>labelled <i>assumed</i> on every reading</td>
+            <td class="no">approximate</td><td>Metadata stripped — a chat app, a screenshot</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note warn">
+    <div class="h">Why rung four exists at all</div>
+    <p>Refusing to measure was worse than it sounds. A user's first upload of a
+       WhatsApp-forwarded photograph produced no scale, so no growth curve, so a blank
+       screen and an instruction to go and calibrate before they had seen the app do
+       anything. Rung four gives a number and marks it <em>assumed</em>. The next paragraph is
+       why that is defensible.</p>
+  </div>
+
+  <h3>4.3 The argument that carries the whole measurement</h3>
+  <p>This is the answer to "how do we trust your millimetres?", and it is worth learning
+     verbatim.</p>
+
+  <p>Tracing a crack's outline adds the outline's own width to the length. Call that bias
+     <em>b</em>. It is roughly constant for a given camera, distance and threshold. So each
+     reading is:</p>
+
+  <div class="eqn">
+    <div class="f">L<sub>measured</sub> = L<sub>true</sub> + b</div>
+  </div>
+
+  <p>Absolute length therefore carries an error. But the growth between two passes is:</p>
+
+  <div class="eqn">
+    <div class="f">Δ = (L₂ + b) − (L₁ + b) = L₂ − L₁</div>
+    <div class="w"><strong>The bias cancels exactly.</strong></div>
+  </div>
+
+  <p>The same holds for the slope of a least-squares fit: adding a constant to every y
+     shifts the intercept and leaves the gradient untouched. So <strong>the growth rate — the
+     number this project sells — is immune to a constant scale bias, while absolute length
+     is not.</strong></p>
+
+  <p>The condition is that the bias be the <em>same</em> across passes, which requires a
+     consistent camera, distance and detector. The prototype meets that by construction:
+     one operator, one phone, one threshold policy. The truck deployment meets it better,
+     with the camera on a rigid mount at a fixed height.</p>
+
+  <h3>4.4 Error budget</h3>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Source</th><th>Magnitude</th><th>Cancels in growth?</th></tr></thead>
+      <tbody>
+        <tr><td>Outline width bias</td><td>~1–3 mm</td><td class="ok">Yes — constant</td></tr>
+        <tr><td>Wrong assumed focal length</td><td>up to ±30% of scale</td>
+            <td class="ok">Scales both readings alike; the <i>rate</i> is proportionally wrong but the trend and the date ordering survive</td></tr>
+        <tr><td>Shooting distance varies pass to pass</td><td>±10 cm at 1.2 m ≈ ±8%</td>
+            <td class="no">No — this is the real limit on rate accuracy</td></tr>
+        <tr><td>Threshold choice differing between passes</td><td>±1–2 px on the trace</td>
+            <td class="no">Partly. It shows as scatter about the fit</td></tr>
+        <tr><td>Detector picking a different candidate</td><td>large</td>
+            <td class="no">Visible as an outlier; removable from the gallery</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>The measured scatter on the committed run — <strong>RMSE 1.18 mm</strong> about the fitted
+     line, largest residual 2.57 mm — is the sum of the last three rows. The fixed-mount
+     truck deployment removes the distance variation, which is the dominant term.</p>
+</section>
+
+<!-- ============================================================ PART 5 -->
+<section class="part" id="p5">
+  <div class="partnum">Part five</div>
+  <h2>Growth, lead time and the statistics</h2>
+  <p class="partsub">How a sequence of measurements becomes a date, and how confident
+     that date actually is.</p>
+
+  <h3>5.1 Ordinary least squares, written out</h3>
+  <p>Readings are (day, length) pairs, day counted from the first sighting. The fit
+     minimises the sum of squared vertical residuals:</p>
+
+  <div class="eqn">
+    <div class="f">slope = Σ(xᵢ − x̄)(yᵢ − ȳ) ⁄ Σ(xᵢ − x̄)²</div>
+    <div class="w">intercept = ȳ − slope · x̄</div>
+  </div>
+
+  <p>Implemented in <code>growth.py</code> in about fifteen lines, standard library only. Two
+     guards matter:</p>
+  <ul>
+    <li><strong>Fewer than two readings</strong> → no rate. A single photograph is a defect, not
+        a trend.</li>
+    <li><strong>Σ(x−x̄)² ≈ 0</strong> → every reading on the same day. The slope would divide by
+        zero, so the app returns <code>SAME DAY</code> and asks for another morning.</li>
+  </ul>
+
+  <h3>5.2 R², and why it is printed next to the answer</h3>
+  <div class="eqn">
+    <div class="f">R² = 1 − SS<sub>residual</sub> ⁄ SS<sub>total</sub></div>
+    <div class="w">The share of the variation in length that the straight line explains.</div>
+  </div>
+  <p>The committed run gives <strong>R² = 0.974</strong>. Below 0.6 the app prints a warning on the
+     face of the result and calls the date rough.</p>
+  <div class="note bad">
+    <div class="h">The trap, and why the app avoids it</div>
+    <p>Two points always fit a line perfectly — R² = 1.000 — and that fact must never be
+       allowed to look like confidence. The app therefore always shows the <em>reading count</em>
+       beside R². "R² 1.00 over 2 readings" reads very differently from "R² 0.97 over 18",
+       and it should.</p>
+  </div>
+
+  <h3>5.3 How confident is 1.392 mm/day?</h3>
+  <p>A reviewer who knows regression will ask for an interval, not a point. Computed from
+     the committed run's eighteen residuals:</p>
+
+  <div class="eqn">
+    <div class="f">SE(slope) = √( SSE ⁄ (n−2) ⁄ Σ(xᵢ − x̄)² ) = 0.0570 mm/day</div>
+    <div class="w">n = 18, so 16 degrees of freedom; t = 2.12 at 95%</div>
+  </div>
+
+  <div class="rows">
+    <div><span class="k">growth rate</span><span class="v">1.392 mm/day</span></div>
+    <div><span class="k">standard error</span><span class="v">0.057 mm/day</span></div>
+    <div><span class="k">95% interval</span><span class="v">1.271 to 1.513 mm/day</span></div>
+    <div><span class="k">RMSE</span><span class="v">1.18 mm
+      <em>typical distance of a reading from the line</em></span></div>
+    <div><span class="k">days to 150 mm</span><span class="v">11.3 days
+      <em>10.4 days at the fast end of the interval, 12.4 at the slow end</em></span></div>
+  </div>
+
+  <p><strong>The crossing date is certain to within about ± 1 day at 95% confidence.</strong> That
+     is the strongest single statistic in this project, and it is worth saying out loud:
+     for a maintenance decision measured in fortnights, a ± 1 day uncertainty is far
+     inside what the decision needs.</p>
+
+  <h3>5.4 Lead time</h3>
+  <div class="eqn">
+    <div class="f">lead time = predicted crossing date − first sighting date</div>
+    <div class="w">28.3 days on the committed run</div>
+  </div>
+  <p>It exists only where the same square metre has been photographed more than once,
+     which is why no Indian road authority publishes it. The fleet summary reports the mean,
+     median, minimum and maximum across spots — and counts <em>only</em> spots where a crossing
+     is actually dated, so the average cannot be flattered by cracks that never grew.</p>
+
+  <h3>5.5 The verdict ladder</h3>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Verdict</th><th>Condition</th><th>Signal</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">SEAL NOW</td><td>latest ≥ threshold</td><td class="no">red</td></tr>
+        <tr><td class="mono">SEAL SOON</td><td>crossing ≤ 14 days away</td><td class="no">red</td></tr>
+        <tr><td class="mono">MONITOR</td><td>15–45 days</td><td>amber</td></tr>
+        <tr><td class="mono">WATCH</td><td>&gt; 45 days</td><td>amber</td></tr>
+        <tr><td class="mono">STABLE</td><td>slope ≤ 0</td><td class="ok">green</td></tr>
+        <tr><td class="mono">BASELINE ONLY</td><td>one reading</td><td>grey</td></tr>
+        <tr><td class="mono">SAME DAY</td><td>all readings on one date</td><td>grey</td></tr>
+        <tr><td class="mono">NO SCALE</td><td>photographs but no millimetres</td><td>grey</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note good">
+    <div class="h">Grey is never green</div>
+    <p>A spot photographed once shows <strong>grey</strong>, not green. "We never went back" is not
+       the same claim as "we checked and it is fine". Every road-condition dataset that
+       reports coverage without recency makes exactly that conflation by omission. This one
+       refuses to.</p>
+  </div>
+</section>
+
+<!-- ============================================================ PART 6 -->
+<section class="part" id="p6">
+  <div class="partnum">Part six</div>
+  <h2>The priority formula</h2>
+  <p class="partsub">One measured term, two stated multipliers, and every constant
+     returned in the API so nobody has to read the source to audit it.</p>
+
+  <div class="eqn">
+    <div class="f">priority = growth rate × rainfall factor × traffic factor</div>
+    <div class="w">measured mm/day &nbsp;·&nbsp; dimensionless &nbsp;·&nbsp; dimensionless<br>
+      the product has units of mm/day: the rate this crack would have with the rain and
+      the traffic it actually faces</div>
+  </div>
+
+  <h3>6.1 Rainfall</h3>
+  <div class="eqn">
+    <div class="f">factor = 1 + (expected mm over 14 days ⁄ 60), capped at 5.0</div>
+  </div>
+  <p>Water is the damage mechanism: it enters the crack, reaches the base course, the base
+     loses support, and the surface fails under the next axle. A dry fortnight gives
+     exactly 1.0, so a dry-season priority is growth × traffic and nothing invented.</p>
+  <p>The figure comes from a bundled table of <strong>47 Indian stations</strong>, monthly normals,
+     apportioned across the days in the window and picked by nearest station with the
+     distance reported. The cap exists because a 900 mm fortnight does not make a crack
+     fifteen times more urgent — past a point the crack is simply saturated.</p>
+  <div class="note warn">
+    <div class="h">Say this before you are asked</div>
+    <p>A <strong>normal is not a forecast</strong>. It says what a fortnight like this usually
+       brings at that place. The API labels it <code>basis: "normal"</code> and never uses the word
+       forecast. <code>POST /api/rainfall</code> takes a real IMD district figure and it is used
+       instead, immediately.</p>
+  </div>
+
+  <h3>6.2 Traffic</h3>
+  <div class="eqn">
+    <div class="f">factor = √(commercial vehicles per day ⁄ 300), clamped 0.5 – 4.0</div>
+  </div>
+  <p><strong>Commercial</strong> vehicles, not total AADT, because it is axle load rather than
+     vehicle count that breaks a pavement. A residential lane — 300 cvpd, the reference —
+     is exactly 1.0.</p>
+  <div class="note">
+    <div class="h">The square root is the arguable choice, so argue it first</div>
+    <p>Pavement design uses a <strong>fourth-power law</strong> for structural damage from axle
+       load. Applied here it would put a national highway 200× above a residential lane
+       and drown the other two terms entirely — the ranking would become a road-class
+       sort with a growth rate attached for decoration.</p>
+    <p>What is being ranked is <em>how much sooner a crack that is already growing needs
+       sealing</em>, not how much total structural damage the road takes. A gentler curve keeps
+       the measured term in charge. The exponent is an assumption, stated as one, and it is
+       the first thing to re-fit against a season of real readings.</p>
+  </div>
+
+  <h3>6.3 The score</h3>
+  <div class="eqn">
+    <div class="f">score = 100 × log₁₀(effective ⁄ 0.05) ⁄ log₁₀(10 ⁄ 0.05)</div>
+    <div class="w">clamped to 0–100; 0.05 mm/day effective scores 0, 10 mm/day scores 100</div>
+  </div>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Effective mm/day</th><th>Score</th><th>Band</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">0.10</td><td class="mono">13</td><td>LOW</td><td>Keep photographing it</td></tr>
+        <tr><td class="mono">0.30</td><td class="mono">34</td><td>MEDIUM</td><td>Next ward round</td></tr>
+        <tr><td class="mono">0.50</td><td class="mono">43</td><td>HIGH</td><td>This fortnight's list</td></tr>
+        <tr><td class="mono">2.20</td><td class="mono">71</td><td>URGENT</td><td>Before the next rain</td></tr>
+        <tr><td class="mono">3.02</td><td class="mono">77</td><td>URGENT</td><td>← the committed run</td></tr>
+        <tr><td class="mono">10.0</td><td class="mono">100</td><td>URGENT</td><td>A pothole forming</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><strong>Why logarithmic.</strong> The product spans orders of magnitude — a hairline at
+     0.05 mm/day on a dry lane against 1.5 mm/day on a monsoon arterial, which is another
+     ten times on top. A linear scale saturates: everything worth looking at pins to 100
+     and the ranking stops ranking. This was found by building it linear first and watching
+     four different spots all score 100.</p>
+
+  <h3>6.4 What the monsoon costs</h3>
+  <p>The rain term never alters the measured growth. <code>mm_per_day</code> stays what the
+     readings said. What changes is a <em>second</em> crossing date computed at the effective
+     rate, printed beside the dry-weather one:</p>
+  <div class="rows">
+    <div><span class="k">dry weather</span><span class="v">18 September</span></div>
+    <div><span class="k">with the rain</span><span class="v">12 September</span></div>
+    <div><span class="k">difference</span><span class="v">6 days
+      <em>what sealing before the rain is worth, as a date rather than a slogan</em></span></div>
+  </div>
+
+  <h3>6.5 Every constant, and its status</h3>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Constant</th><th>Value</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>Rainfall reference</td><td class="mono">60 mm / fortnight</td><td>chosen</td></tr>
+        <tr><td>Rainfall cap</td><td class="mono">5.0</td><td>chosen</td></tr>
+        <tr><td>Traffic reference</td><td class="mono">300 cvpd</td><td>chosen</td></tr>
+        <tr><td>Traffic exponent</td><td class="mono">0.5</td><td>chosen</td></tr>
+        <tr><td>Traffic clamp</td><td class="mono">0.5 – 4.0</td><td>chosen</td></tr>
+        <tr><td>Score floor / ceiling</td><td class="mono">0.05 / 10.0 mm/day</td><td>chosen</td></tr>
+        <tr><td>Seal threshold</td><td class="mono">150 mm</td><td>user-set, per ward policy</td></tr>
+        <tr><td>Growth rate</td><td class="mono">—</td><td class="ok">measured</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><code>GET /api/risk</code> returns all of these under <code>assumptions</code>, in the app's own
+     output. Volunteering that they are chosen is worth more than any answer given after
+     being caught.</p>
+</section>
+
+<!-- ============================================================ PART 7 -->
+<section class="part" id="p7">
+  <div class="partnum">Part seven</div>
+  <h2>Backend architecture</h2>
+  <p class="partsub">What happens to one photograph between the file picker and the
+     database, and why the system is built the way it is.</p>
+
+  <h3>7.1 The split: browser measures, server decides</h3>
+  <p>Pixels stay in the browser. What the server receives is small: an arc length, a span,
+     the working width, a 32 × 32 luminance grid, and the original file bytes for storage.</p>
+  <p>The division is deliberate. Anything that has to <em>survive a closed tab</em> — where the
+     photo was taken, whether it is yesterday's crack, how fast it is growing — is the
+     server's job. Anything that is pure computation on pixels already in the browser stays
+     there, because sending 12 megapixels to a server to count dark pixels is a waste of a
+     depot's bandwidth.</p>
+
+  <h3>7.2 One upload, end to end</h3>
+  <pre>BROWSER
+  1  read file             FileReader → data URL (original bytes, EXIF intact)
+  2  detect                threshold sweep, opening, components, gates
+  3  fingerprint           32 × 32 luminance grid
+  4  POST /api/observations
+
+SERVER  (raahi_backend/api.py :: post_observation)
+  5  decode base64, reject over 24 MB
+  6  exif.read(bytes)      GPS, heading, focal length, shutter time
+  7  resolve position      EXIF → browser geolocation → manual, in that order
+  8  perceptual_hash()     the 32×32 grid → 64-bit dHash
+  9  match_site()          distance + heading + appearance vote
+       └ matched  → this spot          └ no match → create a new spot
+ 10  settle the date       EXIF clock → day number → upload time
+ 11  geotag if needed      write GPS into the file bytes (only if it had none)
+ 12  save_photo()          SHA-256 of the bytes → data/photos/&lt;sha&gt;.ext
+ 13  _scale_for()          the four-rung ladder → mm per pixel
+ 14  length_mm = arc_px × mm_per_px
+ 15  INSERT INTO observations
+ 16  refresh_site_anchor() re-centre the spot on the mean of its fixes
+ 17  growth.analyse()      slope, R², crossing date, verdict
+ 18  risk.assess()         growth × rain × traffic, score, band
+ 19  return the lot as JSON
+
+BROWSER
+ 20  render position panel, growth figures, gallery</pre>
+
+  <div class="note">
+    <div class="h">Step 10 before step 11 — a bug worth knowing about</div>
+    <p>These were originally the other way round. Geotagging wrote <code>DateTimeOriginal</code>
+       into the file, and the date logic then read that stamp back and treated it as the
+       camera's word — so a folder of eighteen undated photographs all landed on the same
+       timestamp and produced no growth rate at all. The date is now settled from the
+       original metadata <em>before</em> anything is written into it.</p>
+  </div>
+
+  <h3>7.3 Data model</h3>
+  <p>SQLite, five tables. Two carry the science:</p>
+
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Table</th><th>Holds</th><th>Key columns</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">sites</td><td>A place on the road</td>
+            <td class="mono">lat, lon, direction_deg, phash, threshold_mm, road_class,
+              commercial_vehicles_per_day, rain_mm_override, ward</td></tr>
+        <tr><td class="mono">observations</td><td>One photograph of one place</td>
+            <td class="mono">site_id, captured_at, lat/lon/altitude/accuracy, gps_source,
+              phash, length_mm, arc_px, image_width, mm_per_px, scale_source, photo_sha,
+              day_index, geotag_written, match_json</td></tr>
+        <tr><td class="mono">calibration</td><td>mm-per-pixel by scope</td>
+            <td class="mono">scope ('global' or a site id), mm_per_px, image_width</td></tr>
+        <tr><td class="mono">trials</td><td>Accuracy against a ruler</td>
+            <td class="mono">drew_mm, said_mm, error_mm</td></tr>
+        <tr><td class="mono">evals</td><td>Detector scores</td>
+            <td class="mono">split, model, payload</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Three schema decisions worth defending:</p>
+  <ul>
+    <li><strong><code>scale_source</code> is stored on every row.</strong> Not just the number but where
+        it came from. A reading measured by calibration and one measured by an assumed lens
+        are different kinds of fact, and the database records which.</li>
+    <li><strong><code>match_json</code> stores the full reasoning</strong> — the metres, the degrees, the
+        bits — for every match. The report can reproduce, months later, exactly why a
+        photograph was filed where it was.</li>
+    <li><strong>Migrations run on start.</strong> Columns added after release are applied with
+        <code>ALTER TABLE</code> guarded by <code>PRAGMA table_info</code>, so an existing database on
+        somebody's laptop survives an upgrade instead of needing a wipe.</li>
+  </ul>
+
+  <h3>7.4 Photographs are content-addressed</h3>
+  <p>A photograph is stored as <code>data/photos/&lt;sha256&gt;.ext</code>. Consequences:</p>
+  <ul>
+    <li>Uploading the same file twice costs no extra disk.</li>
+    <li>A reading traces back to the exact bytes it came from — a hash chain, and the basis
+        for the signed, tamper-evident records the deck proposes for disputes.</li>
+    <li>Lookup is O(1) by name; the folder is never listed.</li>
+  </ul>
+
+  <h3>7.5 Why SQLite and why the standard library only</h3>
+  <p>The deck's production stack is PostgreSQL + PostGIS + FastAPI + Celery. This prototype
+     is deliberately not that.</p>
+  <ul>
+    <li><strong>It has to run on a municipal laptop with no internet and no admin rights.</strong>
+        <code>python3 raahi.py</code> and nothing else. A dependency list is a demo that fails in
+        the room.</li>
+    <li><strong>The whole record is one file</strong> a team-mate can copy, e-mail or delete.</li>
+    <li><strong>SQLite is ACID and handles this volume trivially.</strong> Fifty-four readings is
+        nothing; the same schema migrates to PostGIS unchanged when spatial indexing over
+        a city's worth of spots starts to matter.</li>
+  </ul>
+
+  <h3>7.6 The API</h3>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Method</th><th>Path</th><th>Returns / does</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">GET</td><td class="mono">/api/state</td><td>Counts, calibration, fleet lead time</td></tr>
+        <tr><td class="mono">GET</td><td class="mono">/api/sites · /api/sites/&lt;id&gt;</td><td>Spots, with growth reports</td></tr>
+        <tr><td class="mono">GET</td><td class="mono">/api/observations</td><td>Every photograph, flat, for the gallery</td></tr>
+        <tr><td class="mono">GET</td><td class="mono">/api/schedule</td><td>The ranked seal list, every term shown</td></tr>
+        <tr><td class="mono">GET</td><td class="mono">/api/risk</td><td>The formula's working, terms and assumptions</td></tr>
+        <tr><td class="mono">GET</td><td class="mono">/api/report/&lt;id&gt;</td><td>Detect, track, predict, schedule, verify</td></tr>
+        <tr><td class="mono">GET</td><td class="mono">/api/rainfall?lat=&amp;lon=</td><td>Expected rain and its basis</td></tr>
+        <tr><td class="mono">POST</td><td class="mono">/api/observations</td><td>A photo plus what the browser measured</td></tr>
+        <tr><td class="mono">POST</td><td class="mono">/api/sites/&lt;id&gt;/context</td><td>Road class, vehicle count, ward</td></tr>
+        <tr><td class="mono">POST</td><td class="mono">/api/rainfall</td><td>A real forecast, or a CSV of normals</td></tr>
+        <tr><td class="mono">DELETE</td><td class="mono">/api/observations/&lt;id&gt;</td><td>Remove one photograph; everything recomputes</td></tr>
+        <tr><td class="mono">DELETE</td><td class="mono">/api/records</td><td>Clear the round; keep calibration</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>7.7 Testing</h3>
+  <p><code>tools/selftest.py</code> starts a real server, writes real geotagged photographs,
+     uploads them over HTTP and asserts <strong>68</strong> things about what comes back. Nothing is
+     mocked — the detector inside the test is the browser's own, reimplemented in Python,
+     so the figures it checks are the figures the app produces.</p>
+  <p>A sample of what it proves: GPS is read from the file; later passes land on the same
+     spot and a photo 12 km away does not; growth × rain × traffic really multiplies out
+     to the effective rate printed beside it; a supplied forecast displaces the bundled
+     normals; a photograph sent with no metadata comes back off disk carrying the
+     coordinates the app wrote into it; a deleted spot's id is never reissued.</p>
+</section>
+
+<!-- ============================================================ PART 8 -->
+<section class="part" id="p8">
+  <div class="partnum">Part eight</div>
+  <h2>From this laptop to a truck</h2>
+  <p class="partsub">What the production system does differently, and — more usefully —
+     what it does not.</p>
+
+  <h3>8.1 What survives unchanged</h3>
+  <p>The mathematics is the contribution and none of it changes: the revisit vote, the
+     pinhole scale, the least-squares fit with its confidence interval, the lead time, the
+     priority formula, the honesty rules. Those are the parts a reviewer should test,
+     because they are the parts that will still be there in the deployed system.</p>
+
+  <h3>8.2 What changes</h3>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Stage</th><th>Prototype</th><th>On the truck</th></tr></thead>
+      <tbody>
+        <tr><td>Trigger</td><td>A person chooses files</td>
+            <td>1–2 FPS, gated on speed 10–30 km/h, daylight and sharpness</td></tr>
+        <tr><td>Detection</td><td>Threshold + morphology in the browser</td>
+            <td>TFLite detector fine-tuned on RDD2022, on-device</td></tr>
+        <tr><td>Geometry</td><td>Assumes camera roughly overhead</td>
+            <td>Inverse perspective mapping to a metric top-down view</td></tr>
+        <tr><td>Re-localisation</td><td>GPS + heading + 64-bit scene hash</td>
+            <td>Plus ORB features and homography to the stored reference frame</td></tr>
+        <tr><td>Privacy</td><td>Not required — no people in frame</td>
+            <td>Face and plate blurring <b>before</b> anything is written to storage</td></tr>
+        <tr><td>Transport</td><td>localhost</td>
+            <td>~10 KB vector per detection, over depot Wi-Fi at night</td></tr>
+        <tr><td>Storage</td><td>SQLite + photo files</td><td>PostgreSQL + PostGIS, map-matched to OSM</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>8.3 Why a garbage truck</h3>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Requirement</th><th>Why the waste fleet satisfies it</th></tr></thead>
+      <tbody>
+        <tr><td>Low motion blur</td><td>10–25 km/h — the slowest fleet a city owns</td></tr>
+        <tr><td>Usable light</td><td>Morning collection round</td></tr>
+        <tr><td>Complete coverage</td><td>Every residential lane, not only arterials</td></tr>
+        <tr><td>Daily repetition</td><td>Same route, same time, every day — this is the whole idea</td></tr>
+        <tr><td>Sync point</td><td>Returns to a depot each night; free Wi-Fi</td></tr>
+        <tr><td>One decision-maker</td><td>A Municipal Commissioner, a single pilot</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>8.4 The motion blur arithmetic</h3>
+  <div class="eqn">
+    <div class="f">25 km/h ≈ 6.9 m/s &nbsp;×&nbsp; 1/1000 s shutter &nbsp;=&nbsp; 6.9 mm of travel</div>
+    <div class="w">At a ground resolution near 1 mm/px that is a few pixels of smear along
+      the direction of travel — survivable for a feature measured along its length.</div>
+  </div>
+  <p>This is precisely why the slow fleet was chosen and not a bus or a survey van. At
+     60 km/h the same shutter gives 17 mm of smear and the measurement stops meaning
+     anything.</p>
+
+  <h3>8.5 Bandwidth</h3>
+  <p>A detection travels as a polyline and a class — roughly 10 KB — not as an image. A
+     truck finding 200 defects a day sends about 2 MB, over depot Wi-Fi, once. There is no
+     mobile data cost and no continuous video anywhere in the design.</p>
+
+  <h3>8.6 The rule that separates infrastructure from damage</h3>
+  <div class="note good">
+    <div class="h">The best idea in the project, and it needs no training data</div>
+    <p>A <strong>speed bump, a manhole, a lane marking and a tar patch appear in every pass
+       since day one and never change. A crack appears one day and then grows.</strong></p>
+    <p>That single rule separates permanent infrastructure from developing damage with no
+       labelled dataset and no manual annotation whatsoever — and it is available only to a
+       system that returns to the same metre every morning. It is also the answer to the
+       tar-patch false positive in part two, and the reason the coverage claim and the
+       accuracy claim are the same claim.</p>
+  </div>
+
+  <h3>8.7 Privacy and the DPDP Act 2023</h3>
+  <ul>
+    <li>Faces and number plates blurred <strong>on the device, before any write to storage</strong>.</li>
+    <li>No driver identity is collected.</li>
+    <li>First and last 200 m of every trip discarded, so home and depot stay private.</li>
+    <li>Vectors, not images, leave the vehicle — about 10 KB per detection.</li>
+  </ul>
+
+  <h3>8.8 Deployment phases</h3>
+  <p>Each phase is independently useful; nothing waits on a later one.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Phase</th><th>Scope</th><th>Delivers</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">1</td><td>5 trucks, one ward</td><td>Detection and a crack inventory</td></tr>
+        <tr><td class="mono">2</td><td>Three-week baseline</td><td>Growth rates; the first sealing schedule</td></tr>
+        <tr><td class="mono">3</td><td>Full fleet</td><td>Pre-monsoon campaign and repair verification</td></tr>
+        <tr><td class="mono">4</td><td>Multi-ward</td><td>Platform, second sensing module</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============================================================ PART 9 -->
+<section class="part" id="p9">
+  <div class="partnum">Part nine</div>
+  <h2>Fifty questions, answered</h2>
+  <p class="partsub">Grouped by where they come from. The hostile ones are here too.</p>
+
+  <h3>On the image processing</h3>
+
+  <div class="qa"><div class="q"><i>Q1</i>Why not deep learning? Everyone else is using YOLO.</div>
+    <div class="a"><p>Because our contribution is the <em>measurement over time</em>, not the
+      detection. A detector returns a bounding box; we need a traced length in millimetres
+      to subtract between passes. Classical methods give that, are auditable line by line,
+      and need no training data we have not earned. A TFLite detector on RDD2022 is the
+      production path and it feeds this same geometry stage.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q2</i>How exactly do you find the crack?</div>
+    <div class="a"><p>Downscale to 760 px, convert to greyscale on BT.601 weights, sweep a
+      darkness threshold from 70 to 180 keeping the setting with the best contrast × reach,
+      apply a 3×3 morphological opening to kill aggregate speckle, label 8-connected
+      components, and score each on four shape gates. Half the winner's perimeter is the
+      traced length.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q3</i>Why is arc length half the perimeter?</div>
+    <div class="a"><p>For a long thin shape the boundary runs up one side and back down the
+      other, so the perimeter is about twice the length. It follows every bend, which a
+      straight-line ruler between endpoints would not — and a crack that wanders is genuinely
+      longer than the distance across it.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q4</i>What stops a shadow being measured as a crack?</div>
+    <div class="a"><p>Four gates and a contrast term. A shadow is usually too large (area
+      fraction ≥ 6%), runs off the frame edge (×0.18 penalty), or is not much darker than
+      the scene mean, which demotes it in the contrast × span ordering. It is not
+      infallible, which is why the operator can cycle to the next candidate.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q5</i>Why 760 pixels?</div>
+    <div class="a"><p>Wide enough that a 3 mm crack at 1.2 m is still 2–3 px across; small
+      enough to run twelve threshold passes in well under a second in a browser. It is
+      stored with every reading, because changing it changes the millimetres.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q6</i>Why dilate then erode, not the other way round?</div>
+    <div class="a"><p>Dilate-then-erode is an <em>opening</em>: it removes small isolated objects
+      and keeps large connected ones — exactly right for killing aggregate speckle while
+      keeping a crack. The reverse, a closing, would fill gaps and keep the speckle.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q7</i>Why 8-connectivity?</div>
+    <div class="a"><p>A crack at 30° to the pixel grid is a staircase of diagonal steps.
+      4-connectivity would break it into fragments, each failing the size gate.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q8</i>What is P²/A and why use it?</div>
+    <div class="a"><p>Thinness — the isoperimetric ratio. Minimum 4π ≈ 12.6 for a circle,
+      large for a long thin line. It is scale-invariant, so the same crack at 1 m and at
+      1.5 m scores alike.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q9</i>Your threshold is fixed. Roads are not.</div>
+    <div class="a"><p>It is not fixed. Twelve thresholds are tried, 70 to 180, and the one
+      whose winner has the highest contrast × reach is kept. That is why the app works on
+      the demo images despite their being rendered at exposures spanning 28 grey levels.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q10</i>What about a tar patch or old sealant?</div>
+    <div class="a"><p>Genuine false positive, and we say so. Geometry cannot separate it —
+      it is long, thin and dark. Time can: a sealant line is present on day one and never
+      grows. That persistence rule needs exactly the repeat-visit data this system collects,
+      which is why the answer is in the architecture rather than in a better filter.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q11</i>What if it picks the wrong shape?</div>
+    <div class="a"><p>"Wrong shape? Next candidate" cycles through the runners-up. And when
+      nothing crack-shaped was found at all, the interface says so rather than presenting the
+      darkest blob as a result.</p></div></div>
+
+  <h3>On GPS and matching</h3>
+
+  <div class="qa"><div class="q"><i>Q12</i>GPS is only good to 5–10 m. How is this the same crack?</div>
+    <div class="a"><p>It is not, on GPS alone, and the app never claims otherwise. Three
+      signals vote: distance within 15 m, heading within 45°, and a 64-bit scene fingerprint
+      within 12 bits. Position and heading together, or an unmistakable scene on its own.
+      Every match prints its own reasoning on screen.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q13</i>Why 15 m when the error is 5 m?</div>
+    <div class="a"><p>Because the tolerance must exceed the measurement error or real
+      revisits get rejected. Two fixes each good to ± 5 m can differ by 10 m while describing
+      the same point. The heading and appearance terms carry the discrimination the loosened
+      radius gives up.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q14</i>What if there is no GPS in the photo at all?</div>
+    <div class="a"><p>Three fallbacks in order: the browser's geolocation, a manually typed
+      fix, or the scene fingerprint alone — which at 7 bits or fewer is strong enough to
+      carry the decision by itself. And the position is then written into the file's EXIF as
+      it is stored, so the photograph carries it from then on.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q15</i>How does the image fingerprint survive different lighting?</div>
+    <div class="a"><p>It is a <em>difference</em> hash: each bit records whether one coarse patch
+      is brighter than the patch to its right. Add 20 to every pixel and every comparison
+      gives the same answer. Measured across our eighteen passes at deliberately varied
+      exposure: never more than 2 bits of 64 different.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q16</i>Could two different roads hash the same?</div>
+    <div class="a"><p>64 bits is 1.8 × 10¹⁹ possibilities, and the hash is only ever compared
+      against spots already within 15 m. A collision would have to be a different crack in
+      the same 15 m circle with the same coarse layout — and the distance and heading terms
+      still have to agree.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q17</i>Two cracks one metre apart. What then?</div>
+    <div class="a"><p>The honest answer: no sensor in this set separates them, because they
+      are inside every tolerance we have. So the person holding the camera does — a "this is
+      a different crack" control opens a new spot. Pretending an algorithm could do it would
+      be the dishonest answer.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q18</i>What if the position matches but the picture does not?</div>
+    <div class="a"><p>It is flagged, not silently accepted: "The position matches but the
+      scene does not." Usually it is a wet road. Sometimes it is a different crack two metres
+      over. The system does not know which, so it says so and offers the override.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q19</i>Does accuracy improve over time?</div>
+    <div class="a"><p>Yes. Each pass re-centres the spot on the mean of its own fixes, and on
+      the <em>circular</em> mean for heading. Standard error of the mean falls as 1/√n, so an
+      eighteen-pass spot is about four times better located than a single fix.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q20</i>Two trucks photograph the same crack.</div>
+    <div class="a"><p>Deduplicated by position, heading and visual match — the same three-way
+      vote. It is counted once however many vehicles pass it.</p></div></div>
+
+  <h3>On measurement</h3>
+
+  <div class="qa"><div class="q"><i>Q21</i>How do we trust your millimetres?</div>
+    <div class="a"><p>You do not have to, and that is the point. A traced outline adds its
+      own width — a constant bias b. Every reading is L+b. The growth is (L₂+b) − (L₁+b) =
+      L₂ − L₁: <strong>the bias cancels exactly</strong>. Growth is what we report; absolute length
+      is not the claim.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q22</i>Where does mm-per-pixel come from with no ruler?</div>
+    <div class="a"><p>The pinhole relation. A 35 mm-equivalent focal length is defined
+      against a 36 mm frame, so ground width = 36·d/f and one pixel is that over the pixel
+      width. For our run: 36 × 1200 ÷ (80 × 760) = 0.7105 mm/px.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q23</i>What if the photo has no lens data?</div>
+    <div class="a"><p>A 26 mm phone lens is assumed and <strong>every reading it produces says
+      "assumed" on its face</strong>. It is rung four of four, used only when nothing else is known.
+      Because growth is a subtraction, a wrong constant scales both readings alike and largely
+      cancels out of the number we sell.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q24</i>What is your millimetre accuracy?</div>
+    <div class="a"><p>We report the measured scatter rather than assert a figure: RMSE
+      1.18 mm about the fitted line over eighteen readings, largest single residual 2.57 mm.
+      The training tab records trials against a physical ruler; that number is empty until
+      somebody does them, deliberately.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q25</i>Distance varies between passes. Doesn't that ruin it?</div>
+    <div class="a"><p>It is the dominant remaining error — ±10 cm at 1.2 m is about ±8% of
+      scale — and it is why the truck deployment uses a rigid mount at a fixed height. In the
+      prototype it shows up as scatter about the fit, which the R² and the confidence interval
+      expose rather than hide.</p></div></div>
+
+  <h3>On the statistics</h3>
+
+  <div class="qa"><div class="q"><i>Q26</i>Why a straight line? Crack growth is not linear.</div>
+    <div class="a"><p>Agreed — over a season it is not. Over a two-to-three-week window it is
+      a good local approximation, and R² 0.974 over eighteen readings says the data does not
+      contradict it here. A linear fit is also the honest choice with this much data: fitting
+      a curve to eighteen noisy points would produce confident nonsense.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q27</i>How confident is 1.392 mm/day?</div>
+    <div class="a"><p>Standard error 0.057 mm/day; 95% interval 1.271 to 1.513. Propagated to
+      the crossing, that is 10.4 to 12.4 days against a point estimate of 11.3 — <strong>about
+      ± 1 day</strong>, which is far inside what a fortnightly maintenance decision needs.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q28</i>Two points give R² = 1. Isn't that misleading?</div>
+    <div class="a"><p>It would be, so the reading count is always printed beside R². "R² 1.00
+      over 2 readings" reads differently from "R² 0.97 over 18". Below 0.6 the app also
+      prints a warning and calls the date rough.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q29</i>What is the minimum number of photographs?</div>
+    <div class="a"><p>Two, on different days, gives a rate. The deck's three-week baseline is
+      what makes the rate <em>trustworthy</em>. One photograph gives no rate at all, and the app
+      shows grey rather than green for it.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q30</i>What if a reading is an outlier?</div>
+    <div class="a"><p>It shows as a large residual and depresses R². The gallery lets you
+      remove that photograph, after which the rate, the date and the seal list recalculate
+      from what is left. We do not auto-reject outliers — silently discarding data the
+      operator has not seen is how a measurement system starts lying.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q31</i>What if the crack shrinks?</div>
+    <div class="a"><p>Slope ≤ 0 gives STABLE, a green light, and no date. It is what a sealed
+      or a mis-measured crack looks like, and the verification box distinguishes the two by
+      asking whether the last pass broke the trend.</p></div></div>
+
+  <h3>On the formula</h3>
+
+  <div class="qa"><div class="q"><i>Q32</i>Where does the rainfall number come from?</div>
+    <div class="a"><p>A bundled table of monthly normals for 47 Indian stations, apportioned
+      across the fourteen-day window, nearest station with its distance reported. The API
+      labels it <code>basis: "normal"</code> and never says forecast. Post a real IMD figure and it is
+      used instead.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q33</i>Why divide rainfall by 60?</div>
+    <div class="a"><p>60 mm is an ordinary wet fortnight over most of the country, so it puts
+      the factor near 2 in a normal monsoon. It is a chosen constant, returned in
+      <code>/api/risk</code> under <code>assumptions</code>, and the first thing to re-fit against a season of
+      measured growth.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q34</i>Your traffic numbers are made up.</div>
+    <div class="a"><p>They are class defaults, and every answer says <code>assumed</code> or
+      <code>counted</code>. A municipality with real counts enters them and the term changes in front
+      of you — it is a live control on the report tab.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q35</i>Pavement engineering uses a fourth-power law. Why square root?</div>
+    <div class="a"><p>The fourth power describes <em>structural damage from axle load</em>. Applied
+      here it would put a highway 200× above a lane and drown the measured term — the ranking
+      would become a road-class sort. We are ranking how much sooner an already-growing crack
+      needs sealing, so a gentler curve keeps the measurement in charge. Stated as an
+      assumption, not smuggled in.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q36</i>Why is the score logarithmic?</div>
+    <div class="a"><p>Because the product spans orders of magnitude. We built it linear first
+      and watched four genuinely different spots all score 100 — at which point the ranking
+      stops ranking. Log between 0.05 and 10 mm/day effective discriminates across the whole
+      realistic range.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q37</i>Does rain change your measured growth rate?</div>
+    <div class="a"><p>No, and that separation is deliberate. <code>mm_per_day</code> stays exactly what
+      the readings said. The rain produces a <em>second</em> crossing date, printed beside the
+      dry one, and the difference between them — six days on our run — is what sealing before
+      the monsoon is worth.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q38</i>Why multiply rather than add the terms?</div>
+    <div class="a"><p>Because the effects compound physically: rain accelerates a growing crack
+      in proportion to how fast it is already growing; traffic works open a crack that water
+      has already undermined. Addition would let a stationary crack on a highway outrank a
+      fast-growing one on a lane, which is exactly the wrong answer.</p></div></div>
+
+  <h3>On the system and deployment</h3>
+
+  <div class="qa"><div class="q"><i>Q39</i>Will this work at 25 km/h from a moving truck?</div>
+    <div class="a"><p>6.9 m/s with a 1/1000 s shutter is 6.9 mm of travel — a few pixels of
+      smear at our ground resolution. That is why the slow fleet was chosen deliberately. At
+      60 km/h the same shutter gives 17 mm and the measurement stops meaning anything.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q40</i>How much data does a truck send?</div>
+    <div class="a"><p>About 10 KB per detection — a polyline and a class, not an image. Two
+      hundred defects a day is roughly 2 MB, over depot Wi-Fi at night. No mobile data, no
+      continuous video anywhere in the design.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q41</i>Won't the phone overheat?</div>
+    <div class="a"><p>Screen off, 1–2 FPS, vectors rather than video, no continuous recording.
+      The compute load is low by design, and the gating stage rejects most frames before any
+      detection runs.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q42</i>What about privacy and the DPDP Act?</div>
+    <div class="a"><p>Faces and plates blurred on the device before anything is written to
+      storage. No driver identity collected. First and last 200 m of every trip discarded so
+      home and depot stay private. Vectors, not images, leave the vehicle.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q43</i>What happens when the road is resurfaced?</div>
+    <div class="a"><p>Resurfacing is detected as a wholesale change in the scene fingerprint
+      across every spot on that stretch, and the segment baseline resets. A new surface is
+      never logged as a failed repair.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q44</i>How do you verify a repair actually happened?</div>
+    <div class="a"><p>Tomorrow's collection round drives over yesterday's seal. In this build,
+      with no repair record, we report the honest version: whether the last pass continued
+      the trend or broke it. A length that stops growing after a crew visited is what a seal
+      looks like in the readings.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q45</i>Why SQLite? Real systems use PostgreSQL.</div>
+    <div class="a"><p>They do, and the production design says PostGIS. This prototype must run
+      on a municipal laptop with no internet and no admin rights — <code>python3 raahi.py</code> and
+      nothing else. The schema migrates unchanged when spatial indexing over a city starts to
+      matter.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q46</i>How do you know the app is correct?</div>
+    <div class="a"><p>68 end-to-end checks in <code>tools/selftest.py</code>. It starts a real server,
+      writes real geotagged photographs, uploads them over HTTP and asserts what comes back.
+      Nothing is mocked; the detector inside the test is the browser's own, reimplemented in
+      Python.</p></div></div>
+
+  <h3>The hostile ones</h3>
+
+  <div class="qa"><div class="q"><i>Q47</i>What is your detection accuracy? Everyone else quotes mAP.</div>
+    <div class="a"><p>We have not measured one, so we do not quote one. The detection quality
+      page is written so that it <em>cannot</em> print a headline figure without a named test split
+      and a stated sample size. This build measures growth; that is the claim, and it is a
+      strength stated plainly rather than an absence dressed up as a table.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q48</i>Isn't this just crack detection with extra steps?</div>
+    <div class="a"><p>Crack detection answers "is there a crack here". This answers "which
+      crack, and by when" — and the second question is the one a maintenance budget is spent
+      against. Detection is a solved problem we did not solve; the measurement over time is
+      the part nobody has, because nobody else returns to the same metre daily.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q49</i>Your demo images are synthetic. Does it work on real roads?</div>
+    <div class="a"><p>The synthetic set exists so the loop can be demonstrated indoors in
+      thirty seconds, and the app cannot tell the difference — it reads their EXIF and matches
+      them like any photograph. Real phone photographs work through the same path; the
+      untested part is not the software but the field conditions, which is why daylight and
+      close range are stated limits rather than assumed ones.</p></div></div>
+
+  <div class="qa"><div class="q"><i>Q50</i>What is the single biggest weakness?</div>
+    <div class="a"><p>That the growth measurement depends on a consistent camera geometry
+      between passes, and the prototype achieves that by asking a person to stand in roughly
+      the same place. The rigid truck mount is what makes it robust, and that is exactly the
+      part we have designed but not built. We would rather you test that limit than discover
+      one we hid.</p></div></div>
+</section>
+
+<div style="border-top:2.5px solid var(--ink);margin-top:40px;padding-top:16px;font-size:9pt;
+     color:var(--faint)">
+  Every figure in this document comes from the run committed at <span class="mono">docs/sample-run/</span>
+  in the repository: eighteen photographs, one crack, 1.392 ± 0.057 mm/day at R² 0.974.
+  The input images and the raw JSON output are both there.
+  <br><br>
+  <b>RAAHI</b> · Team Innovators · Smart India Hackathon 2026 · SIH26198 · Transportation &amp; Logistics
+</div>
+
+</div>
+</body>
+</html>
