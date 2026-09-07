@@ -641,7 +641,7 @@ async function runBatch(files) {
   };
 
   $("pick").disabled = true;
-  let saved = 0, skipped = 0, lastPayload = null, lastSeen = null, batchSite = null;
+  let saved = 0, skipped = 0, lastPayload = null, lastSeen = null;
   for (let i = 0; i < ordered.length; i++) {
     const file = ordered[i];
     const counter = "<b>" + (i + 1) + "/" + ordered.length + "</b> " + esc(file.name) + " — ";
@@ -665,10 +665,14 @@ async function runBatch(files) {
         // Only the first photograph of a batch may open a new spot. Without
         // this the tick would apply to all of them and eighteen passes of one
         // crack would become eighteen separate cracks.
+        //
+        // The rest are NOT pinned to that spot. Letting the matcher work them
+        // out for itself is the whole demonstration: each one comes back with
+        // the metres, the degrees and the bits that decided it. Pinning them
+        // would be faster and would replace every one of those sentences with
+        // "you told us this is the same spot", which proves nothing.
         new_spot: i === 0 && !!($("newspot") && $("newspot").checked),
-        site_id: i > 0 && batchSite ? batchSite : null,
       }));
-      if (i === 0) batchSite = payload.site.id;
       lastPayload = payload;
       lastSeen = { img: img, photo: photo, result: auto.result, threshold: auto.threshold };
       saved++;
