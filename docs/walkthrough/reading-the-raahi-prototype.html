@@ -1,0 +1,758 @@
+<title>Reading the RAAHI Prototype</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+:root{
+  --paper:#F4F3EF; --sheet:#FFFFFF; --sunk:#EDEBE5;
+  --ink:#17181C; --body:#3A3A3E; --dim:#6C6B68; --faint:#93918B;
+  --rule:#DEDBD3; --rule-hard:#C6C2B8;
+  --blue:#1F5183; --blue-soft:#E4ECF4;
+  --red:#A83226; --red-soft:#F6E3DF;
+  --amber:#8A5A10; --amber-soft:#F7ECD8;
+  --green:#1F6B41; --green-soft:#E0EFE5;
+  --shadow:0 1px 2px rgba(23,24,28,.05), 0 8px 24px -14px rgba(23,24,28,.22);
+}
+:root:not([data-theme="light"]){
+  @media (prefers-color-scheme: dark){
+    --paper:#131417; --sheet:#1A1B1F; --sunk:#202126;
+    --ink:#EFEEEA; --body:#C6C4BE; --dim:#96948E; --faint:#736F69;
+    --rule:#2C2D33; --rule-hard:#3C3D44;
+    --blue:#7FB2E0; --blue-soft:#17242F;
+    --red:#E8837A; --red-soft:#2A1815;
+    --amber:#DDA64C; --amber-soft:#241C10;
+    --green:#6FCB96; --green-soft:#12231A;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 26px -16px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#131417; --sheet:#1A1B1F; --sunk:#202126;
+  --ink:#EFEEEA; --body:#C6C4BE; --dim:#96948E; --faint:#736F69;
+  --rule:#2C2D33; --rule-hard:#3C3D44;
+  --blue:#7FB2E0; --blue-soft:#17242F;
+  --red:#E8837A; --red-soft:#2A1815;
+  --amber:#DDA64C; --amber-soft:#241C10;
+  --green:#6FCB96; --green-soft:#12231A;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 26px -16px rgba(0,0,0,.8);
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--paper); color:var(--body);
+  font-family:"Source Serif 4",Georgia,"Times New Roman",serif;
+  font-size:16.5px; line-height:1.68; margin:0;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1020px; margin:0 auto; padding:0 28px 96px}
+h1,h2,h3,h4,.lab,.eyebrow,th{font-family:Archivo,"Helvetica Neue",Arial,sans-serif}
+.mono,code,.num{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  font-variant-numeric:tabular-nums}
+
+/* ---------- masthead ---------- */
+header.top{border-bottom:2px solid var(--ink); margin-bottom:44px; padding:56px 0 20px}
+.eyebrow{font-size:11px; font-weight:700; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--blue); margin-bottom:18px}
+h1{font-size:clamp(34px,5.4vw,54px); line-height:1.04; font-weight:800; letter-spacing:-.022em;
+  color:var(--ink); margin:0 0 16px; text-wrap:balance}
+.standfirst{font-size:19px; line-height:1.6; color:var(--dim); max-width:62ch; margin:0}
+.byline{margin-top:22px; font-size:12px; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--faint); font-family:Archivo,sans-serif; font-weight:600}
+
+/* ---------- contents ---------- */
+nav.toc{background:var(--sunk); border:1px solid var(--rule); border-radius:3px;
+  padding:22px 26px; margin-bottom:56px}
+nav.toc .lab{font-size:10.5px; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--faint); font-weight:700; margin-bottom:14px}
+nav.toc ol{list-style:none; margin:0; padding:0; display:grid; gap:2px;
+  grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+nav.toc a{display:flex; gap:12px; align-items:baseline; text-decoration:none; padding:5px 0;
+  color:var(--body); font-size:14.5px; border-bottom:1px solid transparent}
+nav.toc a:hover,nav.toc a:focus-visible{color:var(--blue); border-bottom-color:var(--blue)}
+nav.toc a b{font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--faint);
+  font-weight:500; flex:0 0 auto}
+
+/* ---------- sections ---------- */
+section{margin-bottom:64px; scroll-margin-top:20px}
+.tabhead{display:flex; align-items:baseline; gap:16px; border-bottom:1px solid var(--rule-hard);
+  padding-bottom:10px; margin-bottom:26px}
+.tabnum{font-family:"IBM Plex Mono",monospace; font-size:13px; font-weight:600;
+  color:var(--paper); background:var(--blue); padding:3px 9px; border-radius:2px; flex:0 0 auto}
+h2{font-size:27px; font-weight:700; letter-spacing:-.015em; color:var(--ink); margin:0;
+  text-wrap:balance}
+.tabhead .sub{margin-left:auto; font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--faint); font-family:Archivo,sans-serif; font-weight:600; text-align:right}
+h3{font-size:18px; font-weight:700; color:var(--ink); margin:34px 0 10px; letter-spacing:-.01em}
+h4{font-size:12px; font-weight:700; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--faint); margin:0 0 10px}
+p{margin:0 0 15px; max-width:66ch}
+strong{color:var(--ink); font-weight:600}
+a{color:var(--blue)}
+
+ul.plain{margin:0 0 16px; padding-left:20px; max-width:66ch}
+ul.plain li{margin-bottom:8px}
+
+/* ---------- the readout: real numbers from a real run ---------- */
+.readout{background:var(--sheet); border:1px solid var(--rule); border-radius:3px;
+  box-shadow:var(--shadow); margin:22px 0; overflow:hidden}
+.readout .cap{background:var(--sunk); border-bottom:1px solid var(--rule);
+  padding:9px 18px; font-family:Archivo,sans-serif; font-size:10.5px; font-weight:700;
+  letter-spacing:.14em; text-transform:uppercase; color:var(--dim)}
+.rows{display:grid}
+.rows>div{display:grid; grid-template-columns:minmax(150px,auto) 1fr; gap:6px 22px;
+  padding:11px 18px; border-bottom:1px solid var(--rule); align-items:baseline}
+.rows>div:last-child{border-bottom:none}
+.rows dt,.rows .k{font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--faint);
+  letter-spacing:.02em}
+.rows .v{font-family:"IBM Plex Mono",monospace; font-size:14px; color:var(--ink); font-weight:500}
+.rows .v em{font-style:normal; font-family:"Source Serif 4",serif; font-size:14px;
+  color:var(--dim); display:block; margin-top:3px; line-height:1.55}
+
+/* ---------- the seal light, echoing the app ---------- */
+.light{display:flex; gap:16px; align-items:center; padding:16px 20px; border-radius:3px;
+  border:1px solid var(--rule); margin:8px 0}
+.light .dot{width:22px; height:22px; border-radius:50%; flex:0 0 22px}
+.light .t{font-family:Archivo,sans-serif; font-weight:800; letter-spacing:.09em; font-size:14px}
+.light .d{font-size:14px; color:var(--dim); margin-top:2px; line-height:1.5}
+.light.red{background:var(--red-soft); border-color:var(--red)}
+.light.red .dot{background:var(--red)} .light.red .t{color:var(--red)}
+.light.amber{background:var(--amber-soft); border-color:var(--amber)}
+.light.amber .dot{background:var(--amber)} .light.amber .t{color:var(--amber)}
+.light.green{background:var(--green-soft); border-color:var(--green)}
+.light.green .dot{background:var(--green)} .light.green .t{color:var(--green)}
+.light.grey{background:var(--sunk)}
+.light.grey .dot{background:var(--rule-hard)} .light.grey .t{color:var(--faint)}
+
+/* ---------- the formula ---------- */
+.eq{display:flex; flex-wrap:wrap; gap:10px; align-items:stretch; margin:22px 0}
+.eq .term{flex:1 1 140px; background:var(--sheet); border:1px solid var(--rule);
+  border-radius:3px; padding:14px 16px}
+.eq .term .n{font-family:"IBM Plex Mono",monospace; font-size:21px; font-weight:600; color:var(--ink)}
+.eq .term .l{font-family:Archivo,sans-serif; font-size:10px; letter-spacing:.11em;
+  text-transform:uppercase; color:var(--faint); margin-top:5px; font-weight:600}
+.eq .term.meas{border-color:var(--green)} .eq .term.meas .l{color:var(--green)}
+.eq .term.out{border-color:var(--blue); background:var(--blue-soft)}
+.eq .term.out .n{color:var(--blue)} .eq .term.out .l{color:var(--blue)}
+.eq .op{align-self:center; font-family:"IBM Plex Mono",monospace; font-size:17px; color:var(--faint)}
+
+/* ---------- tables ---------- */
+.scroll{overflow-x:auto; margin:22px 0; border:1px solid var(--rule); border-radius:3px;
+  background:var(--sheet)}
+table{border-collapse:collapse; width:100%; min-width:560px; font-size:14px}
+th{font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--faint);
+  text-align:left; padding:11px 16px; border-bottom:1px solid var(--rule-hard); font-weight:700;
+  background:var(--sunk); white-space:nowrap}
+td{padding:11px 16px; border-bottom:1px solid var(--rule); vertical-align:top; color:var(--body)}
+tr:last-child td{border-bottom:none}
+td.mono{font-size:13px; color:var(--ink)}
+td b{color:var(--ink)}
+.win{color:var(--green); font-weight:600}
+
+/* ---------- pull-outs ---------- */
+.note{border-left:3px solid var(--blue); background:var(--blue-soft); padding:14px 18px;
+  margin:20px 0; border-radius:0 3px 3px 0; font-size:15px; max-width:70ch}
+.note.warn{border-left-color:var(--amber); background:var(--amber-soft)}
+.note .h{font-family:Archivo,sans-serif; font-weight:700; font-size:11px; letter-spacing:.12em;
+  text-transform:uppercase; margin-bottom:6px; color:var(--blue)}
+.note.warn .h{color:var(--amber)}
+.note p:last-child{margin-bottom:0}
+
+/* the line a judge should hear */
+.say{border-top:1px solid var(--rule-hard); border-bottom:1px solid var(--rule-hard);
+  padding:18px 0; margin:26px 0; max-width:70ch}
+.say .h{font-family:Archivo,sans-serif; font-size:10px; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--red); font-weight:700; margin-bottom:8px}
+.say q{font-size:18px; line-height:1.55; color:var(--ink); font-style:italic; quotes:"“" "”"}
+
+code{background:var(--sunk); padding:1px 5px; border-radius:2px; font-size:13.5px; color:var(--ink)}
+
+footer{border-top:2px solid var(--ink); margin-top:70px; padding-top:20px; font-size:13px;
+  color:var(--faint)}
+
+@media (max-width:640px){
+  .wrap{padding:0 18px 60px}
+  .rows>div{grid-template-columns:1fr; gap:3px}
+  .tabhead{flex-wrap:wrap} .tabhead .sub{margin-left:0; text-align:left; width:100%}
+  .eq .op{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+
+<div class="wrap">
+
+<header class="top">
+  <div class="eyebrow">RAAHI · Team Innovators · SIH26198</div>
+  <h1>Reading the prototype, screen by screen</h1>
+  <p class="standfirst">What every tab shows, what each number means, why it is there at all,
+     and what it does that a survey van, a crack-detection app or a complaint portal
+     cannot. Every figure below came out of a real eighteen-photograph run.</p>
+  <div class="byline">A walkthrough for anyone seeing it for the first time</div>
+</header>
+
+<nav class="toc">
+  <div class="lab">Contents</div>
+  <ol>
+    <li><a href="#gps"><b>§</b>The GPS number, explained</a></li>
+    <li><a href="#t0"><b>00</b>Overview</a></li>
+    <li><a href="#t1"><b>01</b>Capture</a></li>
+    <li><a href="#t2"><b>02</b>Spots</a></li>
+    <li><a href="#t3"><b>03</b>Growth</a></li>
+    <li><a href="#t4"><b>04</b>Seal list</a></li>
+    <li><a href="#t5"><b>05</b>Report</a></li>
+    <li><a href="#t6"><b>06</b>Detection quality</a></li>
+    <li><a href="#beats"><b>§</b>How it beats the others</a></li>
+    <li><a href="#hard"><b>§</b>The hard questions</a></li>
+  </ol>
+</nav>
+
+<!-- ================= THE GPS NUMBER ================= -->
+<section id="gps">
+  <div class="tabhead">
+    <span class="tabnum">§</span>
+    <h2>First: what <em>is</em> the GPS number?</h2>
+  </div>
+
+  <p>When a phone takes a photograph with location switched on, it does not just save the
+     picture. In the same file — in a hidden section called <strong>EXIF</strong>, which every
+     camera writes and almost nobody looks at — it records where the camera was standing at
+     the instant the shutter fired.</p>
+
+  <p>Here is every number RAAHI pulled out of the <em>first</em> photograph in the demo round.
+     Nothing here was typed in. It was already inside the file.</p>
+
+  <div class="readout">
+    <div class="cap">Hidden inside day 1 of the round</div>
+    <div class="rows">
+      <div><span class="k">GPSLatitude</span><span class="v">28.613969° N
+        <em>How far north of the equator. Delhi sits at about 28.6.</em></span></div>
+      <div><span class="k">GPSLongitude</span><span class="v">77.209064° E
+        <em>How far east of Greenwich. Together, these two numbers name one point on Earth.</em></span></div>
+      <div><span class="k">in degrees·min·sec</span><span class="v">28° 36' 50.29" N &nbsp; 77° 12' 32.63" E
+        <em>The same fix written the way a survey drawing writes it, so an engineer recognises it.</em></span></div>
+      <div><span class="k">GPSAltitude</span><span class="v">216.0 m
+        <em>Height above sea level.</em></span></div>
+      <div><span class="k">GPSImgDirection</span><span class="v">98.68° from true north
+        <em>Which way the camera was <strong>pointing</strong> — nearly due east. This matters more than you would think.</em></span></div>
+      <div><span class="k">GPSHPositioningError</span><span class="v">± 4.5 m
+        <em>The phone's own honesty: how far out it thinks it might be.</em></span></div>
+      <div><span class="k">DateTimeOriginal</span><span class="v">2026-08-21 06:52
+        <em>When the shutter fired. This is what dates the reading — not when you uploaded it.</em></span></div>
+      <div><span class="k">FocalLengthIn35mmFilm</span><span class="v">80 mm
+        <em>How wide the lens was. This is what turns pixels into millimetres.</em></span></div>
+    </div>
+  </div>
+
+  <h3>How precise is that, really?</h3>
+  <p>Six decimal places of latitude is about <strong>11 centimetres</strong> on the ground. But
+     the phone's <em>own</em> error bar says ± 4.5 m. So the number is written very precisely and
+     known only roughly — and RAAHI never pretends otherwise. It shows the accuracy figure
+     right next to the coordinates.</p>
+
+  <div class="note warn">
+    <div class="h">This is the problem the whole project turns on</div>
+    <p>Two cracks four metres apart are different cracks. A GPS fix good to ± 5 m cannot tell
+       them apart. So <strong>GPS alone is not enough</strong>, and any judge who knows GPS will say
+       so within thirty seconds. RAAHI's answer to that is on the CAPTURE tab below.</p>
+  </div>
+
+  <h3>And when the photo has no GPS?</h3>
+  <p>A webcam frame has no metadata at all. So at the moment RAAHI takes a picture, it
+     <strong>writes the position in itself</strong> — latitude, longitude, altitude, heading, the UTC
+     satellite clock and the accuracy — into the file's own EXIF, exactly as a phone would.
+     Afterwards you can copy that file anywhere, open it in any photo viewer, and the
+     coordinates are there.</p>
+
+  <div class="say">
+    <div class="h">Say this out loud</div>
+    <q>The photograph carries its own evidence. Open it in any EXIF viewer and the coordinates
+       are in the file — so the record and the pixels can never drift apart, which is what a
+       municipality would need if a repair bill were ever disputed.</q>
+  </div>
+</section>
+
+<!-- ================= 00 OVERVIEW ================= -->
+<section id="t0">
+  <div class="tabhead">
+    <span class="tabnum">00</span>
+    <h2>Overview</h2>
+    <span class="sub">The claim, and the limits</span>
+  </div>
+
+  <p><strong>What you see.</strong> A sunrise over a road, drawn entirely in code — no image file.
+     Under it, two short lists: what this build does, and what it does not. At the bottom, a
+     live count of where the round stands.</p>
+
+  <p><strong>Why it is there.</strong> This page exists to set expectations before anyone touches
+     anything. The second list is deliberate and it is the more important of the two.</p>
+
+  <div class="note">
+    <div class="h">The limits list is your armour, not your weakness</div>
+    <p>Every prototype has holes. A panel that <em>tests a limit you already named</em> goes far
+       better than one that <em>finds a limit you hid</em>. Naming them first also means the
+       questions arrive on your terms — you have already answered them.</p>
+  </div>
+
+  <h3>The four limits, and the honest answer to each</h3>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Stated limit</th><th>What you say when asked</th></tr></thead>
+      <tbody>
+        <tr><td><b>No trained classifier yet</b></td>
+            <td>The crack is found by image processing — thresholding, morphology, connected
+                components. We measure growth; classification is the next module, and RDD2022
+                is the dataset for it.</td></tr>
+        <tr><td><b>Rainfall is a normal, not a forecast</b></td>
+            <td>A normal says what a September fortnight <em>usually</em> brings at that station.
+                The app labels it <code>normal</code> and never calls it a forecast. Hand it a real
+                IMD figure and it uses that instead.</td></tr>
+        <tr><td><b>Traffic uses class defaults</b></td>
+            <td>Until a municipality gives us counts. Every answer says whether the figure was
+                counted or assumed.</td></tr>
+        <tr><td><b>Daylight, close range</b></td>
+            <td>Camera roughly overhead. Not heavy rain. This is a limitation of the optics,
+                and we state it rather than discover it on stage.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ================= 01 CAPTURE ================= -->
+<section id="t1">
+  <div class="tabhead">
+    <span class="tabnum">01</span>
+    <h2>Capture</h2>
+    <span class="sub">Photograph · measure · locate · match</span>
+  </div>
+
+  <p>This is where everything enters the system. Four things happen to every photograph,
+     in order, in about half a second.</p>
+
+  <h3>1 · The crack is found without being told where it is</h3>
+  <p>The browser converts the photo to grey, sweeps a darkness threshold across it, cleans up
+     the speckle a grainy road throws off, then groups the surviving dark pixels into
+     connected shapes. It scores each shape on how <em>crack-like</em> it is: thin, long, near
+     the middle, not running off the edge, clearly darker than the tarmac around it. The
+     winner is outlined in red on screen.</p>
+  <p>If it picks the wrong thing, <strong>"Wrong shape? Next candidate"</strong> steps through the
+     runners-up. That button is worth showing — it says the system knows it can be wrong.</p>
+
+  <h3>2 · Pixels become millimetres</h3>
+  <p>Nobody is asked to calibrate anything. The app works the scale out itself, from the best
+     source it has, and always says which one it used:</p>
+  <div class="readout">
+    <div class="cap">The scale ladder — best source first</div>
+    <div class="rows">
+      <div><span class="k">1 · site</span><span class="v">a calibration measured at this exact spot</span></div>
+      <div><span class="k">2 · global</span><span class="v">a calibration from the training tab, rescaled if the photo is a different size</span></div>
+      <div><span class="k">3 · the lens</span><span class="v">focal length × shooting distance
+        <em>Pure optics. An 80 mm-equivalent lens at 1.2 m covers a known width of road, so one pixel is a known number of millimetres. No ruler needed.</em></span></div>
+      <div><span class="k">4 · assumed</span><span class="v">a 26 mm phone lens
+        <em>Only when the photo carries no lens data — a stripped file, a webcam frame. Every reading it produces says <strong>assumed</strong> on its face.</em></span></div>
+    </div>
+  </div>
+
+  <h3>3 · The position is read — or written</h3>
+  <p>The panel <strong>WHERE THIS PHOTO WAS TAKEN</strong> fills in with every number from the
+     GPS section above, plus a green badge saying <strong>FROM THE PHOTO</strong> when the camera
+     supplied it, or <strong>FROM THIS DEVICE</strong> when the browser did. There is a map link, so
+     the claim can be checked against the world in one click.</p>
+
+  <h3>4 · "Is this yesterday's crack?" — the hardest question in the project</h3>
+  <p>GPS alone cannot answer it. So RAAHI votes with <strong>three independent signals</strong>:</p>
+
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Signal</th><th>What it rules out</th><th>Tolerance</th></tr></thead>
+      <tbody>
+        <tr><td><b>Distance</b><br><span class="mono" style="font-size:12px">haversine between two fixes</span></td>
+            <td>A different street entirely</td><td class="mono">15 m</td></tr>
+        <tr><td><b>Heading</b><br><span class="mono" style="font-size:12px">GPS image direction</span></td>
+            <td>Standing in one place and photographing two different edges of the road</td>
+            <td class="mono">45°</td></tr>
+        <tr><td><b>Appearance</b><br><span class="mono" style="font-size:12px">64-bit difference hash</span></td>
+            <td>Everything else — and it works with no GPS at all</td>
+            <td class="mono">12 of 64 bits</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>A photo is the same spot when <strong>position and heading agree</strong>, or when the
+     <strong>scene alone is unmistakable</strong>. And every single match is explained in plain
+     words on screen. This is the sentence the app printed for day 2 of the real run:</p>
+
+  <div class="say">
+    <div class="h">Point at this on screen</div>
+    <q>1.2 m from the recorded position; camera pointing within 4 deg of before; scene matches
+       (1 of 64 bits differ)</q>
+  </div>
+
+  <p>The difference hash deserves a word. It records whether each coarse patch of the picture
+     is brighter than the patch to its right. That makes it <strong>blind to exposure</strong> — the
+     thing that changes most between a 7 a.m. and a 9 a.m. pass — while staying sensitive to
+     the layout of the scene. Across all eighteen demo passes, shot at deliberately different
+     exposures, the fingerprint never differed by more than <span class="mono">2 bits of 64</span>.</p>
+
+  <div class="note">
+    <div class="h">Each visit makes tomorrow's match tighter</div>
+    <p>After every pass the spot is re-centred on the <em>average</em> of its own fixes. More
+       visits, smaller error in the recorded position, easier match next morning.</p>
+  </div>
+
+  <h3>The shutter that presses itself</h3>
+  <p>Press <strong>Capture photo</strong> and the camera watches its own preview once a second. When
+     something crack-shaped holds still for <strong>three frames running</strong>, it fires by itself
+     and stamps the GPS into the file at that instant.</p>
+  <p>Three frames, not one, because a shadow crossing the lens or a passing wheel is gone by
+     the next frame. And this is the point of the whole deployment idea: <strong>a driver on a
+     collection round has both hands on the wheel.</strong> Nobody is going to press anything.</p>
+
+  <h3>Two controls worth demonstrating</h3>
+  <ul class="plain">
+    <li><strong>Choose several photos at once.</strong> Two, five, eighteen, a season. They upload
+        in order with a line each. Order matters — photo two has to find photo one already in
+        the record before it can be recognised as the same place.</li>
+    <li><strong>"This is a different crack."</strong> Two cracks a metre apart sit inside every
+        tolerance the matcher has. The only thing that can separate them is the person holding
+        the camera. Tick it and the next upload opens its own spot, leaving everything already
+        recorded untouched.</li>
+  </ul>
+</section>
+
+<!-- ================= 02 SPOTS ================= -->
+<section id="t2">
+  <div class="tabhead">
+    <span class="tabnum">02</span>
+    <h2>Spots</h2>
+    <span class="sub">The round, as a list</span>
+  </div>
+  <p>Every place a photograph has been taken, with the position the app will match against
+     tomorrow, and how many passes each has. Baseline and latest side by side.</p>
+  <p>This is the tab that shows the system is keeping a <em>register of assets</em>, not a pile of
+     photos. Each row is a piece of road with a history.</p>
+  <p>At the bottom, <strong>CLEAR EVERY RECORD</strong> empties the round — spots, readings and stored
+     photographs — so you can demonstrate twice in a row from nothing. Calibration and the seal
+     threshold survive, because those describe the camera and the policy rather than the road.</p>
+</section>
+
+<!-- ================= 03 GROWTH ================= -->
+<section id="t3">
+  <div class="tabhead">
+    <span class="tabnum">03</span>
+    <h2>Growth</h2>
+    <span class="sub">The heart of the project</span>
+  </div>
+
+  <p>Everything before this tab, other systems can also do. <strong>This is the tab nobody else
+     has</strong>, and it is where you should spend your time.</p>
+
+  <h3>The seal light</h3>
+  <p>One verdict, in colour, above everything else. A ward engineer does not read a growth
+     rate — they read <em>whether to send a crew this week</em>.</p>
+
+  <div class="light red"><span class="dot"></span><div>
+    <div class="t">SEAL IT</div>
+    <div class="d">Past the threshold, or crossing it within a fortnight. The date is printed
+      on the right.</div></div></div>
+  <div class="light amber"><span class="dot"></span><div>
+    <div class="t">WATCH IT</div>
+    <div class="d">Growing, with margin. Keep photographing; not a crew job yet.</div></div></div>
+  <div class="light green"><span class="dot"></span><div>
+    <div class="t">HOLDING</div>
+    <div class="d">Not growing across the passes recorded. Nothing to seal here.</div></div></div>
+  <div class="light grey"><span class="dot"></span><div>
+    <div class="t">NOT MEASURED TWICE</div>
+    <div class="d">One photograph, or all on one day. No rate, so no colour.</div></div></div>
+
+  <div class="note warn">
+    <div class="h">Grey is never green — and this is a deliberate design decision</div>
+    <p>A spot photographed once is <strong>grey</strong>, not green. "We never went back" is not the
+       same claim as "we checked and it is fine". Colouring it green would be the single most
+       dishonest thing this app could do, and every road authority dataset in the country makes
+       exactly that mistake by omission.</p>
+  </div>
+
+  <h3>Baseline against latest</h3>
+  <p>Day one and the newest pass, full size, side by side, with the difference in millimetres
+     between them. In the real run: <span class="mono">110.1 mm → 134.3 mm</span>, a growth of
+     <span class="mono">+24.2 mm</span>.</p>
+
+  <div class="note">
+    <div class="h">Why growth, and not length</div>
+    <p>Absolute length carries a small constant bias — a thick stroke's outline adds its own
+       width, every time. <strong>In a subtraction a constant bias cancels exactly.</strong> So growth
+       survives a biased ruler where length does not. That is why growth is the number this
+       app sells, and it is a genuinely good answer to "how do we trust your millimetres?"</p>
+  </div>
+
+  <h3>The curve, and the numbers under it</h3>
+  <p>Every pass plotted against the red dashed <strong>seal threshold</strong> line, with a faint
+     fitted line through them. The threshold is a slider — set it to whatever the ward's policy
+     says. Below the chart, six figures from the real eighteen-day run:</p>
+
+  <div class="readout">
+    <div class="cap">Live figures · 18 photographs over 17 days</div>
+    <div class="rows">
+      <div><span class="k">GROWTH</span><span class="v">+24.2 mm
+        <em>Baseline to latest.</em></span></div>
+      <div><span class="k">PER WEEK</span><span class="v">+9.74 mm
+        <em>The rate a maintenance schedule can be built on.</em></span></div>
+      <div><span class="k">LEAD TIME</span><span class="v">28.3 days
+        <em>First sighting to predicted failure. The figure nobody in India publishes.</em></span></div>
+      <div><span class="k">DAYS LEFT</span><span class="v">11.3 days
+        <em>From today, at the measured rate.</em></span></div>
+      <div><span class="k">FIT R²</span><span class="v">0.974
+        <em>How well a straight line fits the readings. 1.00 is perfect. Below 0.6 the app prints a warning and calls the date rough — it does not hide a bad fit.</em></span></div>
+      <div><span class="k">PASSES</span><span class="v">18</span></div>
+    </div>
+  </div>
+
+  <div class="say">
+    <div class="h">The single most important sentence in your pitch</div>
+    <q>Lead time only exists if somebody photographs the same square metre of road more than
+       once. That is why no Indian road authority reports it today — and it is the one output
+       of this prototype that is not available anywhere else.</q>
+  </div>
+</section>
+
+<!-- ================= 04 SEAL LIST ================= -->
+<section id="t4">
+  <div class="tabhead">
+    <span class="tabnum">04</span>
+    <h2>Seal list</h2>
+    <span class="sub">The formula, and the crew's order of work</span>
+  </div>
+
+  <p>Two cracks growing at the same rate are not equally urgent. One is under a monsoon sky
+     on a truck route; the other is on a dry residential lane. So the list is ordered by the
+     formula from the deck:</p>
+
+  <div class="eq">
+    <div class="term meas"><div class="n">1.392</div><div class="l">mm / day · measured</div></div>
+    <div class="op">×</div>
+    <div class="term"><div class="n">2.17</div><div class="l">rain · 70 mm in 14 days</div></div>
+    <div class="op">×</div>
+    <div class="term"><div class="n">1.00</div><div class="l">traffic · residential lane</div></div>
+    <div class="op">=</div>
+    <div class="term out"><div class="n">77</div><div class="l">priority</div></div>
+  </div>
+
+  <p>Read left to right. <strong>Only the first term is measured</strong> — it comes from photographs
+     of that actual crack. The other two are stated multipliers, each with its own reference
+     value, and the app prints the arithmetic so anyone can check it by hand.</p>
+
+  <div class="readout">
+    <div class="cap">Where each term comes from</div>
+    <div class="rows">
+      <div><span class="k">growth</span><span class="v">1.392 mm/day
+        <em>Least-squares fit over the 18 readings stored for this spot. Measured, not modelled.</em></span></div>
+      <div><span class="k">rain</span><span class="v">1 + mm / 60, capped at 5
+        <em>70 mm expected over the next fortnight at New Delhi → factor 2.17. One in a dry fortnight, so a dry-season priority is growth × traffic and nothing invented.</em></span></div>
+      <div><span class="k">traffic</span><span class="v">√(commercial vehicles ÷ 300)
+        <em>A residential lane is exactly 1.0. An urban arterial is 2.58, a national highway 4.0. Commercial vehicles, because it is axle load — not vehicle count — that breaks a road.</em></span></div>
+      <div><span class="k">priority</span><span class="v">0 – 100, logarithmic
+        <em>0.05 mm/day effective scores 0; 10 mm/day scores 100. Logarithmic because the product spans orders of magnitude — a straight line would pin everything worth looking at to 100 and the ranking would stop ranking.</em></span></div>
+    </div>
+  </div>
+
+  <h3>The number that wins the argument</h3>
+  <p>The list prints two crossing dates for the same crack:</p>
+  <div class="readout">
+    <div class="cap">What the monsoon costs</div>
+    <div class="rows">
+      <div><span class="k">dry weather</span><span class="v">18 September</span></div>
+      <div><span class="k">with the rain</span><span class="v">12 September</span></div>
+      <div><span class="k">difference</span><span class="v">6 days
+        <em>Sealing before the rain is not the same job as sealing after it. This is slide 2 of your deck, turned into a date.</em></span></div>
+    </div>
+  </div>
+
+  <div class="note warn">
+    <div class="h">Be first to say the constants are chosen</div>
+    <p>60 mm a fortnight, the 0.5 traffic exponent, the score's floor and ceiling — these are
+       <strong>chosen, not fitted</strong>. The app returns them under <code>assumptions</code> in its own
+       output so nobody has to read the source to find out. They are the first thing to
+       re-fit against a season of real readings, and saying so before you are asked is worth
+       more than any answer afterwards.</p>
+  </div>
+
+  <p>A spot with only one photograph is <strong>not scored at all</strong>. It falls to the bottom in
+     one block rather than being interleaved with real results — because a list that implied
+     "considered and found safe" about a crack nobody re-visited would be worse than no list.</p>
+</section>
+
+<!-- ================= 05 REPORT ================= -->
+<section id="t5">
+  <div class="tabhead">
+    <span class="tabnum">05</span>
+    <h2>Report</h2>
+    <span class="sub">One crack, end to end</span>
+  </div>
+
+  <p>The five boxes of the deck, on one screen, for a single crack. This is the tab to open
+     when someone says <em>"show me the whole loop"</em>.</p>
+
+  <div class="readout">
+    <div class="cap">Detect → Track → Predict → Schedule → Verify</div>
+    <div class="rows">
+      <div><span class="k">1 · DETECT</span><span class="v">18 photographs · 110.1 → 134.3 mm
+        <em>Every one taken, measured and stored on this machine. Nothing simulated.</em></span></div>
+      <div><span class="k">2 · TRACK</span><span class="v">18 of 18 carried a GPS fix
+        <em>The position in decimal and in degrees-minutes-seconds, the match radius, a map link.</em></span></div>
+      <div><span class="k">3 · PREDICT</span><span class="v">1.392 mm/day → 18 Sept
+        <em>The rate, the crossing date, and the 28.3-day lead time.</em></span></div>
+      <div><span class="k">4 · SCHEDULE</span><span class="v">priority 77 · URGENT
+        <em>The formula worked out term by term, and the seal-by date with the rain in it.</em></span></div>
+      <div><span class="k">5 · VERIFY</span><span class="v">ON TREND
+        <em>"The last pass gained 1.4 mm against an expected 1.4."</em></span></div>
+    </div>
+  </div>
+
+  <h3>Being straight about VERIFY</h3>
+  <p>The deck promises repair verification on tomorrow's collection round. This build has
+     <strong>no repair record</strong>, so it reports the one thing the readings can honestly support:
+     whether the last pass continued the trend or broke it.</p>
+  <p>A length that <em>stops growing</em> after a crew visited is what a seal looks like from
+     here. A length that <em>jumps</em> is what a failed repair looks like. The app says which,
+     and says when it cannot say — verification needs at least three measured passes.</p>
+
+  <p>Below the five boxes, <strong>every pass day by day</strong> is folded behind a summary line —
+     day number, date, length, growth, position, and the sentence explaining why that photo
+     was matched to this spot. Open it only if someone asks. Eighteen rows of detail is a gift
+     to a hostile question in a five-minute demo.</p>
+
+  <p>At the top of this tab you can set the <strong>road class</strong> and a real vehicle count.
+     Change it from residential lane to urban arterial and watch the traffic term move from
+     1.00 to 2.58 and the priority climb with it — a good live demonstration that the formula
+     is real arithmetic and not a decoration.</p>
+</section>
+
+<!-- ================= 06 DETECTION QUALITY ================= -->
+<section id="t6">
+  <div class="tabhead">
+    <span class="tabnum">06</span>
+    <h2>Detection quality</h2>
+    <span class="sub">The deliberately empty page</span>
+  </div>
+
+  <p>This page says, in one paragraph: <strong>this prototype measures how fast a crack is growing.
+     It does not classify damage types, so there is no mAP to report</strong> — and a number here
+     that had not actually been measured would be worse than a blank.</p>
+
+  <p>Then it says what is measured instead: growth in millimetres per day, the quality of the
+     fit behind it, and the lead time in days.</p>
+
+  <div class="note">
+    <div class="h">Why an empty page is a strong page</div>
+    <p>Half the prototypes in the room will quote a detection score they read in a paper. This
+       one refuses to print a headline figure without a named test split and a stated sample
+       size — the page is written so that it <em>cannot</em>. That is a claim about method, and it
+       is the kind of claim a technical judge remembers.</p>
+  </div>
+
+  <p>When a classifier is trained, its score appears here per class, on a named split, with the
+     sample size beside it. The published reference point to aim at is CRDDC'2022 — best team
+     F1 0.769 on RDD2022. Quote that as <em>the target</em>, never as your result.</p>
+</section>
+
+<!-- ================= HOW IT BEATS ================= -->
+<section id="beats">
+  <div class="tabhead">
+    <span class="tabnum">§</span>
+    <h2>How it beats what already exists</h2>
+  </div>
+
+  <div class="scroll">
+    <table>
+      <thead><tr>
+        <th></th><th>RAAHI</th><th>Survey van (NSV)</th><th>Crack-detection app</th><th>Complaint portal</th>
+      </tr></thead>
+      <tbody>
+        <tr><td><b>What it finds</b></td>
+            <td class="win">Cracks <em>and their growth rate</em></td>
+            <td>Full distress survey</td><td>Cracks in one pass</td><td>Potholes, after failure</td></tr>
+        <tr><td><b>Question answered</b></td>
+            <td class="win">Which crack, and <em>when</em></td>
+            <td>What condition is it in</td><td>Is there a crack here</td><td>Who complained loudest</td></tr>
+        <tr><td><b>Frequency</b></td>
+            <td class="win">Daily</td><td>Periodic, often annual</td><td>Once per survey</td><td>Event-driven</td></tr>
+        <tr><td><b>Cost per km</b></td>
+            <td class="win">Near zero — the truck was already driving</td>
+            <td>Very high</td><td>Low</td><td>Free, but biased</td></tr>
+        <tr><td><b>Repair verified</b></td>
+            <td class="win">Automatically, next pass</td><td>None</td><td>None</td><td>Manual inspection</td></tr>
+        <tr><td><b>Coverage bias</b></td>
+            <td class="win">Fleet routes — reported openly</td>
+            <td>Surveyed corridors only</td><td>Whoever drove it</td><td>Wealthier, vocal wards</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Why has nobody built this?</h3>
+  <p>Detecting a crack in one photograph is a <em>solved problem</em>. Measuring how fast that same
+     crack is growing requires the same camera to return to the same metre of road every
+     morning for weeks — which no survey vehicle, satellite or complaint app can do, and which
+     a municipal waste fleet already does, for free, today.</p>
+
+  <div class="say">
+    <div class="h">The line to close on</div>
+    <q>A crack photographed once is a defect. Photographed for twenty mornings, it is a
+       countdown.</q>
+  </div>
+</section>
+
+<!-- ================= HARD QUESTIONS ================= -->
+<section id="hard">
+  <div class="tabhead">
+    <span class="tabnum">§</span>
+    <h2>The questions you will be asked</h2>
+  </div>
+
+  <div class="scroll">
+    <table>
+      <thead><tr><th style="width:34%">Question</th><th>Answer</th></tr></thead>
+      <tbody>
+        <tr><td><b>GPS is only accurate to 5–10 m. How is this the same crack?</b></td>
+            <td>It isn't, on GPS alone — and we say so on the page. Three signals vote: distance
+                within 15 m, heading within 45°, and a 64-bit fingerprint of the scene itself.
+                Position and heading together, or an unmistakable scene on its own. Every match
+                prints its own reasoning.</td></tr>
+        <tr><td><b>How do we trust your millimetres?</b></td>
+            <td>You don't have to. Absolute length carries a constant bias; growth is a
+                subtraction, so the bias cancels. Growth is the number we report. The scale
+                itself comes from the lens by pure optics, and the app always names which
+                source it used — including when it assumed one.</td></tr>
+        <tr><td><b>Where is the rainfall data from?</b></td>
+            <td>A bundled table of published monthly normals for Indian stations. The app
+                labels it <code>normal</code>, never "forecast", because a normal says what a
+                fortnight like this usually brings. Post a real IMD figure to the app and it
+                uses that instead.</td></tr>
+        <tr><td><b>Your traffic numbers look made up.</b></td>
+            <td>They are class defaults, and every answer says <code>assumed</code> or
+                <code>counted</code>. A municipality with real counts puts them in and the term
+                changes in front of you.</td></tr>
+        <tr><td><b>What is your detection accuracy?</b></td>
+            <td>We have not measured one, so we do not quote one. This build measures growth.
+                The page is written so it cannot print a score without a named split and a
+                sample size.</td></tr>
+        <tr><td><b>What if it rains, or it is dark?</b></td>
+            <td>The camera pauses and resumes in daylight. Stated as a limitation on the
+                overview tab rather than hidden.</td></tr>
+        <tr><td><b>Shadows and road markings?</b></td>
+            <td>Paint is present from day one and never grows. Anything that appears and
+                spreads is damage. That single rule separates infrastructure from damage with
+                no training data at all — and only a fleet that returns to the same metre every
+                morning can apply it.</td></tr>
+        <tr><td><b>Two trucks photograph one crack.</b></td>
+            <td>Deduplicated by position, heading and visual match, so it is counted once
+                however many vehicles pass it.</td></tr>
+        <tr><td><b>Nothing to compare on day one?</b></td>
+            <td>Correct. Detection works immediately; growth needs a baseline of roughly three
+                weeks. The app shows grey, not green, until then — and says so.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<footer>
+  Every figure on this page came from a real run of the prototype: eighteen photographs,
+  one spot, 1.392 mm/day at R² 0.974. Nothing was preloaded into the database.
+</footer>
+
+</div>

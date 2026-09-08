@@ -25,8 +25,9 @@
   <button class="tab" data-p="p2"><span class="n">02</span>SPOTS</button>
   <button class="tab" data-p="p3"><span class="n">03</span>GROWTH</button>
   <button class="tab" data-p="p4"><span class="n">04</span>SEAL LIST</button>
-  <button class="tab" data-p="p5"><span class="n">05</span>DETECTION QUALITY</button>
-  <button class="tab train-only" data-p="p6"><span class="n">06</span>TRAINING</button>
+  <button class="tab" data-p="p7"><span class="n">05</span>REPORT</button>
+  <button class="tab" data-p="p5"><span class="n">06</span>DETECTION QUALITY</button>
+  <button class="tab train-only" data-p="p6"><span class="n">07</span>TRAINING</button>
   <div id="ink"></div>
 </nav>
 
@@ -53,57 +54,26 @@
     <div class="card">
       <h3>WORKING IN THIS BUILD</h3>
       <ul class="ticks">
-        <li>Finds the crack in a photograph without being told where it is</li>
-        <li>Follows every bend and reports length in millimetres</li>
-        <li>Reads GPS out of the photo's own EXIF, or off the device when capturing live</li>
-        <li>Decides whether today's photo is yesterday's crack — position, camera heading
-            and a fingerprint of the scene itself</li>
-        <li>Fits a growth rate across passes and dates the threshold crossing</li>
-        <li>Reports <b>lead time</b>: days between first sighting and predicted failure</li>
-        <li>Scores a damage detector per class, on a named split, sample size stated</li>
+        <li>Finds the crack in a photograph and measures its length in millimetres</li>
+        <li>Reads the GPS out of the photo's own metadata — and writes one in when
+            the camera did not</li>
+        <li>Recognises the same crack tomorrow: position, camera heading, and a
+            fingerprint of the scene itself</li>
+        <li>Turns repeat photographs into a growth rate and a sealing date</li>
+        <li>Ranks the seal list by <b>growth × rainfall × traffic</b></li>
       </ul>
     </div>
     <div class="card">
       <h3>NOT IN THIS BUILD, AND WE SAY SO</h3>
       <ul class="crosses">
-        <li>No trained damage classifier. Detection is classical image processing,
-            not a model — the class labels on the seal list come from whoever typed them</li>
-        <li>No detection score to quote yet. The DETECTION QUALITY tab stays empty
-            until a real model is evaluated against real labels</li>
-        <li>Runs on a laptop or a phone browser, not on a truck</li>
-        <li>Daylight, close range, camera roughly overhead. Not heavy rain</li>
-        <li>Absolute length carries a small constant bias. Growth is a subtraction,
-            so the bias cancels — that is why growth is the number we report</li>
+        <li>No trained damage classifier yet. The crack is found by image
+            processing, not by a model</li>
+        <li>Rainfall uses published monthly normals, not a live forecast. Every
+            answer says which it used</li>
+        <li>Traffic uses road-class defaults until a municipality supplies counts</li>
+        <li>Daylight, close range, camera roughly overhead</li>
       </ul>
     </div>
-  </div>
-
-  <div class="card" style="margin-top:18px">
-    <h3>HOW THE PIECES FIT</h3>
-    <div class="tscroll">
-    <table class="plain">
-      <thead><tr><th>FILE</th><th>WHAT IT DOES</th><th>THE PART THAT MATTERS</th></tr></thead>
-      <tbody>
-        <tr><td class="mono">raahi_backend/exif.py</td><td>Reads EXIF from JPEG and HEIC</td>
-            <td>GPS position, heading, focal length</td></tr>
-        <tr><td class="mono">raahi_backend/geo.py</td><td>Decides if two photos are the same spot</td>
-            <td>Distance + heading + 64-bit scene hash</td></tr>
-        <tr><td class="mono">raahi_backend/growth.py</td><td>Turns readings into a rate and a date</td>
-            <td>Least-squares fit, lead time in days</td></tr>
-        <tr><td class="mono">raahi_backend/metrics.py</td><td>Scores a detector</td>
-            <td>AP per class, COCO IoU sweep</td></tr>
-        <tr><td class="mono">raahi_backend/store.py</td><td>Keeps the record</td>
-            <td>SQLite + the original photos</td></tr>
-        <tr><td class="mono">web/app.js</td><td>Finds and measures the crack in the browser</td>
-            <td>Threshold, morphology, connected components</td></tr>
-      </tbody>
-    </table>
-    </div>
-    <p class="tiny" style="margin-top:14px">
-      Everything is stored in <span class="mono">data/</span> — one SQLite file and the photos,
-      byte for byte as the camera wrote them. Delete the folder to start clean.
-      Nothing leaves the machine.
-    </p>
   </div>
 
   <div class="card" style="margin-top:18px">
@@ -119,25 +89,33 @@
 
   <div class="grid g2">
     <div class="card">
-      <div class="seg" id="src" role="group" aria-label="Photo source">
-        <button class="on" data-m="file" aria-pressed="true">Upload photo</button>
-        <button data-m="cam" aria-pressed="false">Capture photo</button>
-      </div>
-
-      <div id="pickwrap" style="margin-top:16px">
-        <button class="btn g" id="pick">CHOOSE A PHOTO</button>
+      <div id="pickwrap">
+        <button class="btn g" id="pick">CHOOSE PHOTOS</button>
         <p class="tiny" style="margin-top:10px">
           A photo straight off a phone carries its own GPS. That is what lets the app
           find this spot again tomorrow.
         </p>
+        <p class="tiny">
+          Choose <b>as many as you like</b> at once — two, five, eighteen, a whole
+          season. They are measured and saved in order. Two on different days is
+          already a growth rate; more days make the date it predicts firmer.
+        </p>
       </div>
-      <div id="camwrap" style="margin-top:16px"></div>
-      <input type="file" id="file" accept="image/*" style="display:none" aria-label="Choose a photo">
+      <div id="batch"></div>
+      <input type="file" id="file" accept="image/*" multiple style="display:none"
+             aria-label="Choose photos">
 
       <label class="f" for="rname">LABEL (OPTIONAL)</label>
       <input type="text" id="rname" placeholder="Morning round" aria-label="Reading label">
 
-      <div id="siteforce"></div>
+      <div class="spotrow">
+        <label class="pick">
+          <input type="checkbox" id="newspot">
+          <span><b>This is a different crack</b> — start a new spot and keep everything
+                already recorded.</span>
+        </label>
+        <div id="siteforce"></div>
+      </div>
 
       <button class="btn" id="saveread" disabled>SAVE THIS READING</button>
       <div id="msg" role="status" aria-live="polite"></div>
@@ -150,9 +128,13 @@
         <label class="f" for="dist">PHOTO TAKEN FROM ABOUT (cm)</label>
         <input type="number" id="dist" value="120" step="5" min="5"
                aria-label="Camera distance in centimetres">
+        <label class="f" for="dayno">DAY NUMBER IN THE SERIES (OPTIONAL)</label>
+        <input type="number" id="dayno" placeholder="blank unless the dates were stripped"
+               step="1" min="1" aria-label="Day number in the series">
         <p class="tiny" style="margin-top:8px">
-          Used only when no calibration exists: with the lens focal length from EXIF,
-          the distance alone gives millimetres per pixel.
+          The day number is only used when a photo carries no date of its own. The first
+          one seen for a spot fixes day one and the rest are counted from it, so photos
+          uploaded in a single sitting still land on different days.
         </p>
         <div id="cyclewrap"></div>
       </details>
@@ -177,6 +159,17 @@
       </div>
     </div>
   </div>
+
+  <div class="card" style="margin-top:18px">
+    <div class="galhead">
+      <h3 style="margin:0">PHOTOGRAPHS IN THE RECORD <span id="galcount"></span></h3>
+      <button class="btn ghost sm" id="galclear">REMOVE ALL</button>
+    </div>
+    <p class="tiny">Hover a photograph to remove it. Removing one takes its reading
+       out of the growth curve straight away — the rate, the date and the seal list
+       are all recalculated from what is left.</p>
+    <div id="gallery"></div>
+  </div>
 </section>
 
 <!-- ================= 02 SPOTS ================= -->
@@ -185,6 +178,13 @@
   <p class="lede">Every place a photo has been taken, with the position the app will match
      against tomorrow. Photograph the same crack again and it lands in the same row.</p>
   <div id="sitelist"></div>
+  <div class="card" style="margin-top:18px">
+    <h3>START OVER</h3>
+    <p class="tiny">Clears every spot, every reading and every stored photograph, so the
+       next round begins from nothing. Your calibration and the seal threshold are kept.
+       There is no undo.</p>
+    <button class="btn ghost" id="clearall" style="margin-top:12px">CLEAR EVERY RECORD</button>
+  </div>
 </section>
 
 <!-- ================= 03 GROWTH ================= -->
@@ -207,6 +207,8 @@
       </div>
     </div>
   </div>
+
+  <div id="signal"></div>
 
   <div class="card" style="margin-bottom:18px">
     <h3>BASELINE AGAINST LATEST</h3>
@@ -248,10 +250,56 @@
       metre of road more than once, which is why no Indian road authority reports it today.
     </p>
   </div>
+  <div class="card" style="margin-bottom:18px">
+    <h3>HOW THE ORDER IS DECIDED</h3>
+    <div class="formula" id="formulabox"></div>
+    <p class="tiny" style="margin-top:12px">
+      Growth is measured on this machine, from photographs of that spot. Rain and traffic
+      are multipliers, each with the figure behind it and where it came from printed in the
+      table. A spot with no growth rate yet is not scored at all — it drops to the bottom,
+      because never having been re-photographed is not the same as being safe.
+    </p>
+  </div>
   <div class="card">
-    <h3>RANKED BY TIME REMAINING</h3>
+    <h3>RANKED BY GROWTH × RAIN × TRAFFIC</h3>
     <div id="sched"></div>
   </div>
+</section>
+
+<!-- ================= 05 REPORT ================= -->
+<section class="page" id="p7" aria-labelledby="report-title">
+  <h2 id="report-title">The <em>report</em></h2>
+  <p class="lede">One crack, from the first photograph to the sealing date — detect, track,
+     predict, schedule, verify. Everything on this page came out of photographs taken on
+     this machine; nothing is filled in.</p>
+
+  <div class="card" style="margin-bottom:18px">
+    <div class="pickrow">
+      <div style="flex:1">
+        <label class="f" for="reportpick" style="margin-top:0">SPOT</label>
+        <select id="reportpick" aria-label="Choose a spot to report on"></select>
+      </div>
+      <div style="flex:1">
+        <label class="f" for="roadclass" style="margin-top:0">ROAD CLASS</label>
+        <select id="roadclass" aria-label="Road class for this spot"></select>
+      </div>
+      <div style="flex:1">
+        <label class="f" for="cvpd" style="margin-top:0">COMMERCIAL VEHICLES / DAY</label>
+        <input type="number" id="cvpd" min="0" step="10"
+               placeholder="leave blank for the class default"
+               aria-label="Commercial vehicles per day">
+      </div>
+      <div style="align-self:end">
+        <button class="btn ghost" id="savecontext">SET</button>
+      </div>
+    </div>
+    <p class="tiny" style="margin-top:10px">
+      Two of the three terms in the formula describe the road, not the crack. Set them here
+      and the report says which figures were supplied and which are class defaults.
+    </p>
+  </div>
+
+  <div id="report"><div class="ph">Choose a spot.</div></div>
 </section>
 
 <!-- ================= 05 DETECTION QUALITY ================= -->
@@ -274,14 +322,9 @@
       <h3>CALIBRATION — TEACH IT HOW BIG A PIXEL IS</h3>
       <p class="mut">Photograph a <b>straight</b> line whose length you have measured with a
         ruler. Everything measured afterwards inherits this number.</p>
-      <div class="seg" id="src1" role="group" aria-label="Calibration photo source">
-        <button class="on" data-m="file" aria-pressed="true">Upload photo</button>
-        <button data-m="cam" aria-pressed="false">Capture photo</button>
-      </div>
-      <div id="pickwrap1" style="margin-top:16px">
+      <div id="pickwrap1">
         <button class="btn ghost" id="pick1">CHOOSE A PHOTO</button>
       </div>
-      <div id="camwrap1" style="margin-top:16px"></div>
       <input type="file" id="file1" accept="image/*" style="display:none" aria-label="Calibration photo">
 
       <label class="f" for="t1">DARKNESS THRESHOLD <span id="t1v" style="color:var(--amber)">110</span></label>

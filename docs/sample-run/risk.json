@@ -1,0 +1,186 @@
+{
+    "sites": [
+        {
+            "site_id": "SITE-001",
+            "name": "Spot 1 \u00b7 28.61397, 77.20906",
+            "growth": {
+                "mm_per_day": 1.392,
+                "mm_per_week": 9.74,
+                "fit_r2": 0.974,
+                "readings": 18,
+                "basis": "least-squares fit over the readings stored for this spot"
+            },
+            "rain": {
+                "expected_mm": 70.0,
+                "window_days": 14,
+                "window_from": "2026-09-07",
+                "window_to": "2026-09-20",
+                "factor": 2.167,
+                "basis": "normal",
+                "station": "New Delhi",
+                "distance_km": 0.4,
+                "source_table": "built-in table",
+                "phase": "monsoon",
+                "daily": [
+                    {
+                        "date": "2026-09-07",
+                        "mm": 5.0
+                    },
+                    {
+                        "date": "2026-09-08",
+                        "mm": 5.0
+                    },
+                    {
+                        "date": "2026-09-09",
+                        "mm": 5.0
+                    },
+                    {
+                        "date": "2026-09-10",
+                        "mm": 5.0
+                    },
+                    {
+                        "date": "2026-09-11",
+                        "mm": 5.0
+                    },
+                    {
+                        "date": "2026-09-12",
+                        "mm": 5.0
+                    },
+                    {
+                        "date": "2026-09-13",
+                        "mm": 5.0
+                    },
+                    {
+                        "date": "2026-09-14",
+                        "mm": 5.0
+                    },
+                    {
+                        "date": "2026-09-15",
+                        "mm": 5.0
+                    },
+                    {
+                        "date": "2026-09-16",
+                        "mm": 5.0
+                    },
+                    {
+                        "date": "2026-09-17",
+                        "mm": 5.0
+                    },
+                    {
+                        "date": "2026-09-18",
+                        "mm": 5.0
+                    },
+                    {
+                        "date": "2026-09-19",
+                        "mm": 5.0
+                    },
+                    {
+                        "date": "2026-09-20",
+                        "mm": 5.0
+                    }
+                ],
+                "note": "Monthly normal for New Delhi, 0 km away, apportioned across the 14 days. A normal is what a fortnight like this usually brings, not a forecast. Post a real forecast to /api/rainfall and it is used instead."
+            },
+            "traffic": {
+                "road_class": "residential_lane",
+                "road_class_label": "Residential lane",
+                "commercial_vehicles_per_day": 300,
+                "factor": 1.0,
+                "basis": "assumed",
+                "reference_cvpd": 300.0,
+                "note": "No road class and no count. Treated as a residential lane at 300 commercial vehicles a day, which is the reference road \u2014 the traffic term is 1.0 and changes nothing."
+            },
+            "window_days": 14,
+            "score_scale": {
+                "floor_mm_per_day": 0.05,
+                "ceiling_mm_per_day": 10.0,
+                "shape": "logarithmic between the two"
+            },
+            "effective_mm_per_day": 3.016,
+            "score": 77,
+            "band": "URGENT",
+            "action": "Schedule before the next rain.",
+            "formula": "1.392 mm/day \u00d7 2.17 rain \u00d7 1.00 traffic = 3.016 mm/day effective",
+            "monsoon_cross_date": "2026-09-12T12:02:52.089811+00:00",
+            "monsoon_days_remaining": 4.8,
+            "dry_cross_date": "2026-09-18T13:49:52.894232+00:00",
+            "dry_days_remaining": 10.9,
+            "days_bought_by_rain": 6.1,
+            "verdict": "SEAL SOON",
+            "rank": 1
+        }
+    ],
+    "summary": {
+        "sites": 1,
+        "scored": 1,
+        "urgent": 1,
+        "high": 0,
+        "no_rate_yet": 0,
+        "soonest_crossing_days": 4.8,
+        "window_days": 14,
+        "rain_window_mm": 70.0,
+        "formula": "priority = growth rate (mm/day) \u00d7 rainfall factor \u00d7 traffic factor"
+    },
+    "terms": {
+        "growth": "Millimetres a day, from a least-squares fit over the readings actually stored for that spot. Measured, not modelled.",
+        "rain": "1 + expected millimetres over the next 14 days / 60, capped at 5. One in a dry fortnight, so a dry-season priority is growth \u00d7 traffic and nothing invented.",
+        "traffic": "sqrt(commercial vehicles per day / 300), clamped 0.5 to 4.0. A residential lane is exactly 1.",
+        "score": "The product is an effective growth rate in mm/day, mapped to 0-100 on a log scale: 0.05 mm/day scores 0, 10 mm/day scores 100. Logarithmic because the product spans orders of magnitude and a straight line would pin every spot worth looking at to 100."
+    },
+    "road_classes": [
+        {
+            "key": "national_highway",
+            "label": "National highway",
+            "cvpd": 6000,
+            "about": "Through freight. Heaviest axle loads on the network.",
+            "factor": 4.0
+        },
+        {
+            "key": "state_highway",
+            "label": "State highway",
+            "cvpd": 2500,
+            "about": "Inter-district traffic, mixed freight.",
+            "factor": 2.887
+        },
+        {
+            "key": "major_district_road",
+            "label": "Major district road",
+            "cvpd": 1200,
+            "about": "Feeds the highway network; loaded local freight.",
+            "factor": 2.0
+        },
+        {
+            "key": "urban_arterial",
+            "label": "Urban arterial",
+            "cvpd": 2000,
+            "about": "City spine \u2014 buses, tippers, delivery trucks all day.",
+            "factor": 2.582
+        },
+        {
+            "key": "urban_collector",
+            "label": "Urban collector",
+            "cvpd": 700,
+            "about": "Ward road feeding the arterials.",
+            "factor": 1.528
+        },
+        {
+            "key": "residential_lane",
+            "label": "Residential lane",
+            "cvpd": 300,
+            "about": "The reference road. Waste truck, autos, two-wheelers.",
+            "factor": 1.0
+        },
+        {
+            "key": "service_road",
+            "label": "Service road",
+            "cvpd": 150,
+            "about": "Frontage or approach road, light traffic.",
+            "factor": 0.707
+        }
+    ],
+    "assumptions": [
+        "The rainfall reference (60 mm a fortnight), the traffic exponent (0.5) and the score's floor and ceiling (0.05 and 10 mm/day effective) are chosen constants, not fitted ones. They are the first thing to re-fit against a season of real readings.",
+        "Bundled rainfall figures are approximate monthly normals, not a forecast. Post a real forecast to /api/rainfall and it is used instead.",
+        "Traffic counts default to a class table until a municipality supplies its own."
+    ]
+}

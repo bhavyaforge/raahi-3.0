@@ -1,7 +1,11 @@
 # The record this machine has collected: a SQLite file and the photographs.
 # Local to whoever ran the app; not part of the source.
 data/
+
+# Demo photographs are generated on demand — `python3 raahi.py demo --out <dir>`
+# takes any folder name, so match the shape rather than one spelling.
 demo_photos/
+demo*/
 
 __pycache__/
 *.pyc

@@ -43,13 +43,50 @@ TRY IT WITHOUT GOING OUTSIDE
 
     python3 raahi.py demo
 
-Writes five photographs of a crack that grows a little each day, each one
-carrying real GPS in its metadata. Upload them in order on the CAPTURE
-tab. Photo 1 says "New spot recorded". Photo 2 onward says "Same spot as
+Writes eighteen photographs of a crack that grows a little each morning,
+day 1 to day 18, each one carrying real GPS in its metadata. On the
+CAPTURE tab press "CHOOSE PHOTOS" and select the whole folder at once —
+they go up in order, with a line each saying what happened.
+
+Eighteen is only the demo. Upload as many or as few as you like: two
+photographs on different days already give a growth rate.
+
+    python3 raahi.py demo --passes 5
+
+
+TWO CRACKS, AND STARTING OVER
+-----------------------------
+
+Photographing a different crack? Tick "This is a different crack" on the
+CAPTURE tab before you upload. It opens a new spot and leaves everything
+already recorded alone.
+
+To wipe the record and begin again, go to the SPOTS tab and press
+"CLEAR EVERY RECORD". Your calibration is kept.
+
+Photo 1 says "New spot recorded". Photo 2 onward says "Same spot as
 before" and explains why — the metres from the recorded position, the
 camera heading, the scene match.
 
-Then look at GROWTH and SEAL LIST. The lead time comes out around 12 days.
+Then look at GROWTH, SEAL LIST and REPORT. The crack grows about 1.4 mm a
+day, the lead time comes out around 28 days, and the seal list ranks it by
+
+    growth rate  x  rainfall forecast  x  traffic
+
+with every term and where it came from printed beside the answer.
+
+
+REMOVING A PHOTOGRAPH, AND STARTING OVER
+----------------------------------------
+
+Under the upload button, every photograph in the record appears as a
+thumbnail with its day number and its measurement. Hover one and a small
+cross appears in the corner: click it and that reading comes out of the
+growth curve. The rate, the date and the seal list are recalculated from
+what is left.
+
+"REMOVE ALL" next to that heading empties the whole round. Your
+calibration and the seal threshold are kept.
 
 
 IF SOMETHING LOOKS WRONG
@@ -59,8 +96,8 @@ Front page showing big percentages, or a headline across the road image?
 You are looking at an older copy. The front page should be a wordless
 sunrise over a road, with the writing below it.
 
-Camera button does nothing? The camera needs the server — it will not
-work if you double-click index.html. Uploading a photo always works, and
-an uploaded phone photo carries GPS, which a webcam frame does not.
+Nothing happens when you choose photos? The app needs the server — it
+will not work if you double-click index.html. Run "python3 raahi.py"
+and use the address it prints.
 
 Nothing to install. Python 3 only. Nothing leaves your machine.

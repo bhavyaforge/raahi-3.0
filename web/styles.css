@@ -309,8 +309,8 @@ select:focus{border-color:var(--amber)}
 /* Only enough shading at the very bottom to let the image settle into the
    page. The top stays clean — the sky is the best part. */
 .roadhero .shade{position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(180deg,rgba(8,7,10,.34) 0%,rgba(8,7,10,0) 16%,
-    rgba(8,7,10,0) 84%,rgba(10,9,7,.55) 96%,rgba(10,9,7,.92) 100%)}
+  background:linear-gradient(180deg,rgba(8,7,10,.30) 0%,rgba(8,7,10,0) 15%,
+    rgba(8,7,10,0) 86%,rgba(10,9,7,.38) 97%,rgba(10,9,7,.80) 100%)}
 
 /* The heading, the standfirst and the way in — below the image, not on it. */
 .introrow{display:flex;align-items:flex-end;justify-content:space-between;
@@ -554,3 +554,133 @@ select:focus{border-color:var(--amber)}
 .tscroll table{min-width:540px}
 .tscroll::-webkit-scrollbar{height:6px}
 .tscroll::-webkit-scrollbar-thumb{background:rgba(214,182,128,.22);border-radius:3px}
+
+/* ------------------------------------------------------------------
+   The formula, the automatic shutter, the batch upload, the report.
+   ------------------------------------------------------------------ */
+
+/* growth × rain × traffic = priority, written out so the reader can
+   check the arithmetic rather than trust the ranking. */
+.eq{display:flex;flex-wrap:wrap;align-items:stretch;gap:10px}
+.eq .term{flex:1 1 130px;border:1px solid var(--edge);border-radius:11px;
+  padding:14px 16px;font-size:19px;font-weight:700;color:var(--ink);
+  background:rgba(255,255,255,.015)}
+.eq .term em{display:block;margin-top:6px;font-style:normal;font-size:10.5px;
+  letter-spacing:.6px;color:var(--faint);font-weight:500;text-transform:uppercase}
+.eq .term.measured{border-color:rgba(47,191,113,.34)}
+.eq .term.measured em{color:#5FD397}
+.eq .term.out{border-color:rgba(224,165,75,.4);color:var(--amber)}
+.eq .op{align-self:center;font-size:17px;color:var(--faint);font-family:var(--mono)}
+
+/* The shutter that presses itself. */
+.shutterrow{display:flex;align-items:center;gap:9px;margin-top:12px;
+  font-size:12.5px;color:var(--dim);cursor:pointer}
+.shutterrow input{width:15px;height:15px;accent-color:var(--amber);cursor:pointer}
+.shutterstate{margin-top:8px;font-family:var(--mono);font-size:11px;
+  letter-spacing:.3px;color:var(--faint);min-height:15px}
+
+/* A line per file while a folder of daily passes goes up. */
+#batchlines{max-height:280px;overflow:auto;margin-top:4px}
+.batchline{font-size:12px;line-height:1.65;padding:5px 0;color:var(--dim);
+  border-bottom:1px solid rgba(214,182,128,.07)}
+.batchline.ok{color:#8FE8B8}
+.batchline.warn{color:#F0C88A}
+.batchline.bad{color:#F0A79F}
+.batchline .tiny{color:var(--faint)}
+
+/* Report rows: a label, the figure, and where the figure came from. */
+.rrows{display:grid;gap:1px;background:rgba(214,182,128,.08);
+  border:1px solid var(--edge);border-radius:11px;overflow:hidden}
+.rrows>div{display:grid;grid-template-columns:1fr auto;gap:4px 18px;
+  padding:12px 16px;background:var(--bg2);align-items:baseline}
+.rrows>div span{font-size:11px;letter-spacing:.6px;color:var(--faint);
+  text-transform:uppercase}
+.rrows>div b{font-size:14px;color:var(--ink);text-align:right;font-weight:700}
+.rrows>div em{grid-column:1/-1;font-style:normal;color:var(--faint);line-height:1.55}
+
+@media (max-width:620px){
+  .rrows>div{grid-template-columns:1fr}
+  .rrows>div b{text-align:left}
+  .eq .op{display:none}
+}
+
+/* ------------------------------------------------------------------
+   The seal signal, the spot controls.
+   ------------------------------------------------------------------ */
+
+/* One verdict, in colour, above everything else on the GROWTH tab. A ward
+   engineer reads whether to send a crew — not a growth rate. */
+.signal{display:flex;align-items:center;gap:20px;padding:22px 26px;margin-bottom:18px;
+  border-radius:14px;border:1px solid var(--edge);background:var(--bg2)}
+.signal .lamp{width:46px;height:46px;border-radius:50%;flex:0 0 46px}
+.signal .t{font-size:24px;font-weight:800;letter-spacing:2.5px}
+.signal .s{margin-top:6px;font-size:13px;line-height:1.6;color:var(--dim);max-width:64ch}
+.signal .by{margin-left:auto;text-align:right;padding-left:24px;flex:0 0 auto}
+.signal .by span{display:block;font-size:10px;letter-spacing:1.2px;color:var(--faint)}
+.signal .by b{font-size:16px;color:var(--ink);font-family:var(--mono)}
+
+.signal.red{border-color:rgba(226,86,74,.45);background:linear-gradient(135deg,
+  rgba(226,86,74,.14),rgba(226,86,74,.04))}
+.signal.red .lamp{background:#E2564A;box-shadow:0 0 26px rgba(226,86,74,.6)}
+.signal.red .t{color:#F0A79F}
+
+.signal.amber{border-color:rgba(224,165,75,.4);background:linear-gradient(135deg,
+  rgba(224,165,75,.12),rgba(224,165,75,.03))}
+.signal.amber .lamp{background:var(--amber);box-shadow:0 0 26px rgba(224,165,75,.5)}
+.signal.amber .t{color:var(--amber)}
+
+.signal.green{border-color:rgba(47,191,113,.4);background:linear-gradient(135deg,
+  rgba(47,191,113,.12),rgba(47,191,113,.03))}
+.signal.green .lamp{background:#2FBF71;box-shadow:0 0 26px rgba(47,191,113,.5)}
+.signal.green .t{color:#8FE8B8}
+
+/* Grey, not green. Never having been re-photographed is not the same as safe. */
+.signal.grey .lamp{background:rgba(167,152,128,.3)}
+.signal.grey .t{color:var(--faint)}
+
+.spotrow{margin-top:16px}
+.pick{display:flex;gap:10px;align-items:flex-start;font-size:12.5px;line-height:1.6;
+  color:var(--dim);cursor:pointer;padding:12px 14px;border:1px solid var(--edge);
+  border-radius:10px;background:rgba(255,255,255,.015)}
+.pick input{width:15px;height:15px;margin-top:2px;accent-color:var(--amber);cursor:pointer}
+.pick b{color:var(--ink)}
+
+@media (max-width:720px){
+  .signal{flex-wrap:wrap;gap:14px}
+  .signal .by{margin-left:0;padding-left:0;text-align:left}
+}
+
+/* ------------------------------------------------------------------
+   The gallery: every photograph in the record, and a way out for each.
+   ------------------------------------------------------------------ */
+.galhead{display:flex; align-items:center; gap:16px; flex-wrap:wrap}
+.galhead h3{flex:1}
+.btn.sm{padding:8px 14px; font-size:11px; margin-top:0; width:auto}
+
+/* Fifty-plus thumbnails have to stay scannable, so the tile is small and the
+   grid fills whatever width the card has. */
+.gal{display:grid; gap:12px; margin-top:14px;
+  grid-template-columns:repeat(auto-fill,minmax(132px,1fr))}
+
+.galitem{position:relative; margin:0; border:1px solid var(--edge); border-radius:9px;
+  overflow:hidden; background:var(--bg2)}
+.galitem img{display:block; width:100%; aspect-ratio:4/3; object-fit:cover;
+  background:rgba(255,255,255,.03)}
+.galitem .nophoto{display:flex; align-items:center; justify-content:center; text-align:center;
+  aspect-ratio:4/3; font-size:10.5px; line-height:1.5; color:var(--faint);
+  background:rgba(255,255,255,.02)}
+.galitem figcaption{padding:8px 10px; display:grid; gap:2px}
+.galitem figcaption b{font-size:12px; color:var(--ink); letter-spacing:.02em}
+.galitem figcaption span{font-family:var(--mono); font-size:12px; color:var(--amber)}
+.galitem figcaption em{font-style:normal; font-size:10px; color:var(--faint);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+
+/* The cross stays visible on touch, where there is no hover to reveal it. */
+.galx{position:absolute; top:6px; right:6px; width:26px; height:26px; border-radius:50%;
+  border:1px solid rgba(226,86,74,.5); background:rgba(12,10,8,.82); color:#F0A79F;
+  font-size:17px; line-height:1; cursor:pointer; opacity:0; transition:opacity .15s ease;
+  display:flex; align-items:center; justify-content:center; padding:0}
+.galitem:hover .galx, .galx:focus-visible{opacity:1}
+.galx:hover{background:#A83226; color:#fff; border-color:#A83226}
+.galx:disabled{opacity:.4; cursor:default}
+@media (hover:none){ .galx{opacity:1} }
