@@ -85,19 +85,64 @@
   const NEAR_HALF = 0.52;  // half the carriageway, as a fraction of the frame
   const SUN_X = 0.545;     // just off the vanishing point, so it sits in the gap
 
-  const horizonY = () => height * HORIZON;
-  const vanishX = () => width * VANISH;
-  const depthScale = () => height - horizonY();
+  /* ------------------------------------------------------------ camera */
+
+  // A camera bolted to a tripod pointing down a street is the one thing
+  // that never happens in real footage. The projection below was already
+  // true perspective, and the scene still read as a flat picture sliding
+  // upwards, because nothing in it moved the way a camera does.
+  //
+  // Six numbers fix that, and they have to be physically consistent or the
+  // brain rejects the whole thing:
+  //
+  //   bob    the camera rises and falls on the suspension. The horizon is
+  //          at infinity, so raising the camera does NOT move it — it makes
+  //          the ground fall away faster. That is depthScale, not horizonY.
+  //   pitch  the nose lifts and drops. This DOES move the horizon, because
+  //          the horizon's position depends on where the camera is pointed
+  //          and not on where it is.
+  //   sway   the vehicle drifts across its lane. A lateral shift moves
+  //          near things a lot and far things not at all — which is
+  //          parallax, and parallax is the whole of the 3D read.
+  //   yaw    the driver corrects. This moves the vanishing point, and the
+  //          sun with it, since both are at infinity.
+  //   roll   the body leans into the correction.
+  //
+  // Every axis is the sum of three incommensurate sines, so the motion
+  // never visibly repeats and never looks like a loop.
+  let camBob = 0, camPitch = 0, camSway = 0, camYaw = 0, camRoll = 0;
+
+  function updateCamera(time) {
+    if (still) { camBob = camPitch = camSway = camYaw = camRoll = 0; return; }
+    const t = time / 1000;
+    // Suspension. A loaded vehicle body bounces at somewhere near 1.5 Hz;
+    // anything much slower reads as swimming rather than as driving, which
+    // is what the first attempt at this looked like.
+    camBob = Math.sin(t * 8.4) * 0.009 + Math.sin(t * 13.1 + 1.1) * 0.004
+           + Math.sin(t * 2.3 + 2.3) * 0.011;
+    // Pitch trails the bob, the way a body does over its springs.
+    camPitch = Math.sin(t * 8.4 - 0.55) * 0.0015 + Math.sin(t * 2.3 + 1.7) * 0.0015;
+    // Lane wander and the corrections that go with it.
+    camSway = Math.sin(t * 0.41) * 0.055 + Math.sin(t * 0.97 + 0.7) * 0.020;
+    camYaw = Math.sin(t * 0.41 + 1.57) * 0.0034 + Math.sin(t * 0.97 + 2.3) * 0.0012;
+    camRoll = Math.sin(t * 0.41 + 1.2) * 0.0042 + Math.sin(t * 1.13 + 2.2) * 0.0018;
+  }
+
+  const horizonY = () => height * (HORIZON + camPitch);
+  const vanishX = () => width * (VANISH + camYaw);
+  // Bob changes how fast the ground falls away, because that is the one
+  // thing camera height actually controls.
+  const depthScale = () => height * (1 - HORIZON) * (1 + camBob);
   const yAt = (z) => horizonY() + depthScale() / z;
   const halfAt = (z) => (width * NEAR_HALF) / z;
-  const sunX = () => width * SUN_X;
+  const sunX = () => width * (SUN_X + camYaw);
   const sunY = () => horizonY() - Math.min(width, height) * 0.042;
   const sunR = () => Math.min(width * 0.032, height * 0.070);
 
   // The one projection. Everything in the world goes through it.
   const P = (u, h, z) => {
     const k = halfAt(z);
-    return { x: vanishX() + u * k, y: yAt(z) - h * k };
+    return { x: vanishX() + (u - camSway) * k, y: yAt(z) - h * k };
   };
 
   function quad(a, b, c, d) {
@@ -454,6 +499,11 @@
   }
 
   function buildSheen() {
+    // Pre-rendered, so it has to be built from the camera's rest pose;
+    // otherwise whatever the suspension happened to be doing at resize
+    // would be baked into it for good.
+    const kb = camBob, kp = camPitch, ky = camYaw;
+    camBob = camPitch = camYaw = 0;
     // One smooth vertical gradient, masked sideways with destination-in.
     // Stacking horizontal bands instead — the obvious approach — leaves a
     // visible ladder of bars down the road, because each band has an edge
@@ -491,6 +541,7 @@
     sheen = document.createElement("canvas");
     sheen.width = width; sheen.height = height;
     sheen.getContext("2d").drawImage(buffer, 0, 0);
+    camBob = kb; camPitch = kp; camYaw = ky;
   }
 
   /* -------------------------------------------------------------- resize */
@@ -1502,10 +1553,12 @@
 
   function roadPath() {
     ctx.beginPath();
-    ctx.moveTo(vanishX() - halfAt(0.92), height + 10);
-    ctx.lineTo(vanishX() + halfAt(0.92), height + 10);
-    ctx.lineTo(vanishX() + halfAt(200), horizonY());
-    ctx.lineTo(vanishX() - halfAt(200), horizonY());
+    const nl = P(-1, 0, 0.92), nr = P(1, 0, 0.92);
+    const fl = P(-1, 0, 200), fr = P(1, 0, 200);
+    ctx.moveTo(nl.x, height + 10);
+    ctx.lineTo(nr.x, height + 10);
+    ctx.lineTo(fr.x, fr.y);
+    ctx.lineTo(fl.x, fl.y);
     ctx.closePath();
   }
 
@@ -1526,7 +1579,7 @@
     roadPath();
     ctx.clip();
 
-    if (grain) {
+    if (grainPat) {
       ctx.globalAlpha = 0.55;
       ctx.fillStyle = grainPat;
       ctx.fillRect(0, y1, width, y0 - y1);
@@ -1705,17 +1758,17 @@
       const far = near + dash;
       if (far <= 0.92) continue;
       if (near < 0.92) near = 0.92;
-      const yNear = yAt(near), yFar = yAt(far);
-      if (yNear - yFar < 0.35) break;
+      const cNear = P(0, 0, near), cFar = P(0, 0, far);
+      if (cNear.y - cFar.y < 0.35) break;
       const wNear = halfAt(near) * 0.019 + 0.4;
       const wFar = halfAt(far) * 0.019 + 0.3;
       ctx.globalAlpha = Math.max(0, Math.min(1, (near - 0.92) / 2.6)) * 0.80;
       ctx.fillStyle = "rgba(244,230,200,0.60)";
       ctx.beginPath();
-      ctx.moveTo(vanishX() - wNear, yNear);
-      ctx.lineTo(vanishX() + wNear, yNear);
-      ctx.lineTo(vanishX() + wFar, yFar);
-      ctx.lineTo(vanishX() - wFar, yFar);
+      ctx.moveTo(cNear.x - wNear, cNear.y);
+      ctx.lineTo(cNear.x + wNear, cNear.y);
+      ctx.lineTo(cFar.x + wFar, cFar.y);
+      ctx.lineTo(cFar.x - wFar, cFar.y);
       ctx.closePath();
       ctx.fill();
     }
@@ -2042,14 +2095,31 @@
 
   /* --------------------------------------------------------------- frame */
 
-  const SPEED = 0.62;   // world units a second — a survey crawl, not a drive
+  // World units a second. One unit is a little over four metres, so this
+  // is about eighteen kilometres an hour: the speed a municipal survey
+  // vehicle actually works at, and slow enough to read a crack as it goes
+  // past rather than watching it flick by.
+  const SPEED = 1.15;
 
   function draw(dt) {
     if (!width || !height) return;
     const time = performance.now();
     const step = dt || 0;
 
+    updateCamera(time);
+
     ctx.clearRect(0, 0, width, height);
+    // Roll is a rotation of the frame, not of anything in the world, so it
+    // wraps every world pass and stops before the lens effects — a
+    // vignette that tilts with the body would be a vignette painted on the
+    // windscreen. The slight overscan keeps the corners covered.
+    ctx.save();
+    if (camRoll) {
+      ctx.translate(width / 2, height / 2);
+      ctx.rotate(camRoll);
+      ctx.scale(1.012, 1.012);
+      ctx.translate(-width / 2, -height / 2);
+    }
     drawSky();
     drawStars(time);
     drawClouds(time);
@@ -2069,6 +2139,7 @@
     drawTraffic(step);
     drawReticle(time);
     drawMotes(time);
+    ctx.restore();
     drawFinish();
   }
 
