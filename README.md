@@ -16,6 +16,12 @@ says *this one, by Friday*.
 successive mornings, measures how much the crack grew between visits, and turns
 the growth rate into a sealing date.
 
+![The street the app opens on, drawn in code, with a crack measured as it passes](docs/screenshots/00-street.jpg)
+
+*The first thing the app shows you is the view from the windscreen. Nothing in
+that frame is a photograph or a video — it is drawn, frame by frame, from the
+same geometry the rest of the app uses.*
+
 ![Day one against day eighteen, with the verdict above it](docs/screenshots/03-growth.jpg)
 
 ---
@@ -31,6 +37,9 @@ python3 raahi.py          # opens the app in your browser
 
 On the **CAPTURE** tab press *Choose photos*, select all eighteen, and watch them
 go in. Then open **GROWTH**.
+
+The eighteen are also committed, in [`docs/photographs/`](docs/photographs/), so
+a fresh clone has something to upload without generating anything first.
 
 The app has no idea those photographs are synthetic. It reads their GPS, works
 out on its own that they are the same crack, measures each one, and builds
@@ -233,13 +242,42 @@ ready — there is the [technical defence](docs/defence/RAAHI-Technical-Defence.
 | **05 Report** | One crack end to end: detect, track, predict, schedule, verify |
 | **06 Detection quality** | Deliberately empty, and it explains why |
 
-The overview opens on a street at first light, with cracks that arrive out of
-the distance, open, and pass under the camera. It is not a video and not a
-stock photograph: the whole scene — sky, buildings, trees, lamps, tarmac and
-every crack in it — is about two thousand lines of canvas drawing in
-`web/hero.js`, generated from a fixed seed so it is the same street every
-time. It is there because it is the view from the windscreen of the vehicle
-this is meant to run on.
+### The street it opens on
+
+The overview opens on a city road at first light, moving. Cracks arrive out of
+the distance, open, run past, and are replaced by new ones. It is not a video
+and not a stock photograph — the whole scene is drawn in code, frame by frame,
+in [`web/hero.js`](web/hero.js), from a fixed seed so it is the same street on
+every visit.
+
+It is built on one projection. A point in the world is three numbers — sideways,
+upwards, and distance — and it lands on the screen through a single scale
+factor, so a building is four quadrilaterals and nothing needs a matrix.
+Forward motion is one number: everything standing on the ground is stored at a
+fixed distance and drawn relative to how far the camera has travelled, then
+rebuilt far away once it passes. That is what makes the cracks arrive rather
+than scroll.
+
+The camera is on a vehicle, not a tripod, and that turns out to be the whole
+difference between a picture that slides and a space you are moving through:
+
+| | |
+| --- | --- |
+| **bob** | the body rises and falls on its springs. The horizon is at infinity, so this does not move it — it makes the ground fall away faster |
+| **pitch** | the nose lifts and drops. This *does* move the horizon, because the horizon depends on where the camera points, not where it is |
+| **sway** | the vehicle drifts across its lane, which moves near things a great deal and far things not at all |
+| **yaw** | the driver corrects, taking the vanishing point and the sun with it, since both are at infinity |
+| **roll** | the body leans into the correction |
+
+Measured on the running page: a fixed point on the kerb eight metres ahead
+sweeps 47 px, the same point 165 m ahead sweeps 9 px — and almost all of that
+9 px is yaw, which is a rotation and correctly moves everything equally.
+Roughly fifty to one in translation alone. That gradient is depth, and no
+amount of scrolling a texture produces it.
+
+Why it is there at all: it is the view from the windscreen of the vehicle this
+is meant to run on. Everything else in the app is what happens after that
+camera sees something.
 
 ### Worth demonstrating live
 

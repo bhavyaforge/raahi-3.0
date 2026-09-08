@@ -5,11 +5,43 @@ hand, or edited afterwards.
 
 ```
 docs/
+├── photographs/     eighteen geotagged photographs, ready to upload
 ├── screenshots/     the app running, one image per screen
 ├── sample-run/      one crack, eighteen photographs — the input and the output
 ├── walkthrough/     the presentation guide, as a PDF and as a web page
 └── defence/         the technical document: every algorithm and constant, defended
 ```
+
+---
+
+## photographs/
+
+Eighteen photographs of one crack, one a morning, each carrying real EXIF:
+GPS position, camera heading, capture time, focal length. They are the demo
+round, committed so that a fresh clone has something to upload without
+generating anything first.
+
+```
+day01_20260822.png  …  day18_20260908.png      18 files, 7.4 MB
+```
+
+**To use them:** start the app, open **CAPTURE**, press *Choose photos*, select
+all eighteen, and open **GROWTH**. The app is not told they belong together —
+it reads the GPS out of each file, works out on its own that they are the same
+spot, measures each crack, and builds the curve from what it found.
+
+Open any one of them in an EXIF viewer to check the position is really in the
+file and not something the app invented:
+
+```
+lat 28.61396119   lon 77.20904328   heading 93.53°T
+taken 2026-08-28T06:43:00   focal length 80 mm equivalent   accuracy ±4.5 m
+```
+
+`python3 raahi.py demo` writes an identical set into `demo_photos/` whenever
+you want a fresh one — the dates end on the day you run it, so a set generated
+in January will score differently from this one, correctly, because there is no
+monsoon coming to get into the crack.
 
 ---
 
@@ -20,7 +52,7 @@ Taken from a live browser against a real server, on the eighteen-day demo round.
 | file | what it shows |
 | --- | --- |
 | `00-overview.jpg` | What the build does, and the four limits it states up front |
-| `00-street.jpg` | The opening frame: a city street at dawn, drawn in code, with cracks that open and run past |
+| `00-street.jpg` | The opening frame: a moving city street at dawn, drawn in code, with a crack measured as it passes |
 | `01-capture-batch.jpg` | Eighteen photographs uploading in order, with the GPS panel filled in |
 | `01-gps-from-a-phone.jpg` | A phone photograph's own EXIF, read out in full |
 | `01-gallery.jpg` | Every photograph in the record, each removable on its own |
@@ -123,6 +155,8 @@ filled database in the repository and a fresh clone would show eighteen
 readings before anyone had uploaded anything — which would quietly make the
 claim false, and a judge who cloned the repo would find that out.
 
-The demo photographs are generated on demand by `python3 raahi.py demo`, so
-they are not committed either. Three of them are here as samples, which is
-enough to inspect the EXIF without carrying all eighteen in version control.
+The photographs themselves are a different matter and **are** committed, in
+`photographs/`. They are *input*, not results: having them in the repository
+means anyone can clone it and produce the numbers on this page for themselves,
+which is the opposite of preloading. `python3 raahi.py demo` still writes a
+fresh set whenever you want one.
